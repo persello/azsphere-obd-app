@@ -1,4 +1,4 @@
-package com.example.azsphere_obd_app;
+package it.riccardopersello.azsphereobdapp;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

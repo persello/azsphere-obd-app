@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.azsphere_obd_app">
+    package="it.riccardopersello.azsphereobdapp">
 
     <!-- io.flutter.app.FlutterApplication is an android.app.Application that
          calls FlutterMain.startInitialization(this); in its onCreate method.
@@ -10,6 +10,8 @@
         android:name="io.flutter.app.FlutterApplication"
         android:label="azsphere_obd_app"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyDg43lm-8YOzNTFh3nVxmKLg2chOFvKAEQ"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

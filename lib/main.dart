@@ -1,4 +1,7 @@
 import 'package:flutter/cupertino.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import 'dart:async';
 
 void main() => runApp(MyApp());
 
@@ -32,6 +35,19 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  Completer<GoogleMapController> _controller = Completer();
+
+  bool _mapActivityIndicatorVisible = true;
+
+  void _onMapCreated(GoogleMapController controller) {
+    _controller.complete(controller);
+    setState(() {
+      _mapActivityIndicatorVisible = false;
+    });
+  }
+
+  void _editMapView() {}
+
   @override
   Widget build(BuildContext context) {
     return CupertinoTabScaffold(
@@ -39,15 +55,23 @@ class _MainPageState extends State<MainPage> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.home),
-            title: Text('Products'),
+            title: Text('Home'),
           ),
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.search),
-            title: Text('Search'),
+            icon: Icon(CupertinoIcons.navigation_circled),
+            title: Text('Map'),
           ),
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.shopping_cart),
-            title: Text('Cart'),
+            icon: Icon(CupertinoIcons.pie_chart),
+            title: Text('Data'),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.download),
+            title: Text('Download'),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.settings),
+            title: Text('Settings'),
           ),
         ],
       ),
@@ -59,19 +83,63 @@ class _MainPageState extends State<MainPage> {
                 navigationBar: CupertinoNavigationBar(
                   middle: Text("Home"),
                 ),
-                child: Text("1"),
+                child: Center(
+                  child: Text("1"),
+                ),
               );
             });
           case 1:
             return CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
-                child: Text("2"),
+                navigationBar: CupertinoNavigationBar(
+                  middle: Text("Map"),
+                  trailing: CupertinoButton(
+                    padding: EdgeInsets.all(10),
+                    child: Text("View"),
+                    onPressed: _editMapView,
+                  ),
+                ),
+                child: Stack(
+                  children: <Widget>[
+                    GoogleMap(
+                      initialCameraPosition:
+                          CameraPosition(target: LatLng(0, 0), zoom: 1),
+                      onMapCreated: _onMapCreated,
+                    ),
+                    Center(
+                      child: Visibility(
+                        child: CupertinoActivityIndicator(
+                          animating: true,
+                        ),
+                        visible: _mapActivityIndicatorVisible,
+                      ),
+                    ),
+                  ],
+                ),
               );
             });
           case 2:
             return CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
-                child: Text("3"),
+                child: Center(
+                  child: Text("3"),
+                ),
+              );
+            });
+          case 3:
+            return CupertinoTabView(builder: (context) {
+              return CupertinoPageScaffold(
+                child: Center(
+                  child: Text("4"),
+                ),
+              );
+            });
+          case 4:
+            return CupertinoTabView(builder: (context) {
+              return CupertinoPageScaffold(
+                child: Center(
+                  child: Text("5"),
+                ),
               );
             });
         }
