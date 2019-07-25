@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'dart:async';
 
 import 'tabs/map/map.dart';
 
@@ -89,6 +88,7 @@ class _MainPageState extends State<MainPage> {
               );
             });
           case 4:
+          default:
             return CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
                 child: Center(

@@ -1,17 +1,23 @@
 import 'package:flutter/cupertino.dart';
-import 'dart:async';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import 'package:azsphere_obd_app/iosstyles.dart';
 
 //import 'package:azsphere_obd_app/iosstyles.dart';
 
 class MapViewSettings extends StatefulWidget {
-  MapViewSettings({Key key, this.title}) : super(key: key);
+  MapViewSettings({Key key, this.title, @required this.data}) : super(key: key);
 
   final String title;
+  final MapViewSettingsData data;
+
+  final Map<int, Widget> mapTypeChoices = const <int, Widget>{
+    // 1, 4, 3 in order to match GoogleMap's MapType enum
+    1: Text("Normal"),
+    4: Text("Satellite"),
+    3: Text("Terrain")
+  };
 
   @override
   _MapViewSettingsState createState() => _MapViewSettingsState();
@@ -20,6 +26,7 @@ class MapViewSettings extends StatefulWidget {
 class _MapViewSettingsState extends State<MapViewSettings> {
   @override
   Widget build(BuildContext context) {
+
     return CupertinoPageScaffold(
       backgroundColor: CustomCupertinoColors.systemGray6,
       navigationBar: CupertinoNavigationBar(
@@ -31,14 +38,22 @@ class _MapViewSettingsState extends State<MapViewSettings> {
           ListGroupSpacer(
             title: "View",
           ),
-          ListSwitch(
-            title: "Show my location",
-            onChanged: (bool x) {},
+          GenericListItem(
+            child: CupertinoSegmentedControl<int>(
+              onValueChanged: (int selectedMapType) {
+                setState(() {
+                    widget.data.mapType = MapType.values[selectedMapType];
+                });
+              },
+              children: widget.mapTypeChoices,
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              groupValue: widget.data.mapType.index,
+            ),
           ),
           ListSwitch(
-            title: "Satellite view",
-            onChanged: (bool x) {},
-            initialValue: true,
+            title: "Show my location",
+            onChanged: (bool value) {widget.data.showMyLocation = value;},
+            initialValue: widget.data.showMyLocation,
           ),
           ListSwitch(
             title: "Bap",
@@ -49,4 +64,11 @@ class _MapViewSettingsState extends State<MapViewSettings> {
       ),
     );
   }
+}
+
+class MapViewSettingsData {
+  MapViewSettingsData({this.showMyLocation, this.mapType});
+  bool showMyLocation;
+  // Normal, hybrid or terrain
+  MapType mapType;
 }

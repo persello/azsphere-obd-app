@@ -15,8 +15,12 @@ class MapTab extends StatefulWidget {
 }
 
 class _MapTabState extends State<MapTab> {
+
   Completer<GoogleMapController> _controller = Completer();
   bool _mapActivityIndicatorVisible = true;
+  MapViewSettingsData _data = MapViewSettingsData(mapType: MapType.normal, showMyLocation: false);
+
+
   void _onMapCreated(GoogleMapController controller) {
     PermissionHandler().requestPermissions([PermissionGroup.location]);
     _controller.complete(controller);
@@ -26,7 +30,7 @@ class _MapTabState extends State<MapTab> {
   }
 
   void _editMapView() {
-    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(fullscreenDialog: true, builder: (context) => MapViewSettings(title: "Map Settings")));
+    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(fullscreenDialog: true, builder: (context) => MapViewSettings(title: "Map Settings", data: _data,)));
   }
 
   @override
@@ -48,8 +52,9 @@ class _MapTabState extends State<MapTab> {
             onMapCreated: _onMapCreated,
             compassEnabled: true,
             myLocationButtonEnabled: true,
-            myLocationEnabled: true,
+            myLocationEnabled: _data.showMyLocation,
             padding: EdgeInsets.fromLTRB(0, 70, 0, 50),
+            mapType: _data.mapType,
           ),
           Center(
             child: Visibility(

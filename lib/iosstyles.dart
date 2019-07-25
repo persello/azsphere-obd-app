@@ -35,9 +35,9 @@ class CustomCupertinoTextStyles {
 /// or other [Widget] behind the [ListView]. By default, the title is empty
 /// and the [height] parameter is set to 60.
 class ListGroupSpacer extends StatelessWidget {
+  const ListGroupSpacer({this.title = "", this.height = 60});
   final String title;
   final double height;
-  const ListGroupSpacer({this.title = "", this.height = 60});
 
   @override
   Widget build(BuildContext context) {
@@ -151,6 +151,51 @@ class _ListSwitchState extends State<ListSwitch> {
             )
           ],
         ),
+      ),
+    );
+  }
+}
+
+class GenericListItem extends StatelessWidget {
+  GenericListItem({this.child, this.isLast = false});
+  final bool isLast;
+  final Widget child;
+
+  Widget build(BuildContext context) {
+    return Container(
+      color: CustomCupertinoColors.white,
+
+      // For stacking vertically the list item and the separator
+      child: Column(
+        children: <Widget>[
+          // Padding for child
+          Padding(
+            padding: EdgeInsets.symmetric(
+              vertical: 6,
+              horizontal: 12,
+            ),
+
+            // Center the child
+              child: Row(
+                children: <Widget>[
+                  Expanded(child: this.child,)
+                ],
+              ),
+          ),
+
+          // Only if not last
+          Visibility(
+            child: Padding(
+              // Touches right side but not left
+              padding: EdgeInsets.fromLTRB(12, 0, 0, 0),
+              child: Container(
+                height: 1,
+                color: CustomCupertinoColors.systemGray6,
+              ),
+            ),
+            visible: !this.isLast,
+          )
+        ],
       ),
     );
   }
