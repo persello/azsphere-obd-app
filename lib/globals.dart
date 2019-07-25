@@ -27,3 +27,10 @@ class Settings {
         this.mapViewSettingsData.showMyLocation);
   }
 }
+
+class MapViewSettingsData {
+  MapViewSettingsData({this.showMyLocation, this.mapType});
+  bool showMyLocation;
+  // Normal, hybrid or terrain
+  MapType mapType;
+}

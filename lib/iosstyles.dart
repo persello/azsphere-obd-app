@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 
 /// Some custom-defined colors based on [Apple's guidelines](https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/color/).
@@ -12,6 +14,9 @@ class CustomCupertinoColors {
   static const Color white = Color.fromARGB(255, 255, 255, 255);
   static const Color black = Color.fromARGB(255, 0, 0, 0);
   static const Color transparent = Color.fromARGB(0, 0, 0, 0);
+
+  static const Color red = Color.fromARGB(255, 255, 59, 48);
+  static const Color teal = Color.fromARGB(255, 90, 200, 250);
 }
 
 /// Some custom text styles for general usage.
@@ -24,6 +29,18 @@ class CustomCupertinoTextStyles {
     letterSpacing: 0.3,
     fontSize: 15,
   );
+
+  /// A text style for all the buttons that perform destructive actions.
+  static const TextStyle warningButton = TextStyle(
+      color: CupertinoColors.destructiveRed, fontWeight: FontWeight.w600);
+
+  /// A black text style.
+  static const TextStyle blackStyle =
+      TextStyle(color: CustomCupertinoColors.black);
+
+  /// A white text style.
+  static const TextStyle whiteStyle =
+      TextStyle(color: CustomCupertinoColors.white);
 }
 
 /// A spacer to be used to divide elements of a [ListView].
@@ -156,6 +173,11 @@ class _ListSwitchState extends State<ListSwitch> {
   }
 }
 
+/// A generic List Item Container.
+///
+/// This container is a generic white container for a ListView.
+/// It has been tested with [Text] and [CupertinoSegmentedControl],
+/// surrounded by a [Padding].
 class GenericListItem extends StatelessWidget {
   GenericListItem({this.child, this.isLast = false});
   final bool isLast;
@@ -176,11 +198,13 @@ class GenericListItem extends StatelessWidget {
             ),
 
             // Center the child
-              child: Row(
-                children: <Widget>[
-                  Expanded(child: this.child,)
-                ],
-              ),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: this.child,
+                )
+              ],
+            ),
           ),
 
           // Only if not last
@@ -197,6 +221,141 @@ class GenericListItem extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+}
+
+class ListButton extends StatefulWidget {
+  ListButton({@required this.children, this.onPressed, this.isLast = false});
+  final List<Widget> children;
+  final bool isLast;
+  final VoidCallback onPressed;
+
+  @override
+  _ListButtonState createState() => _ListButtonState();
+}
+
+class _ListButtonState extends State<ListButton> {
+  @override
+  Widget build(BuildContext context) {
+    // For detecting taps in all the area
+    return GestureDetector(
+      onTap: () {
+        if (widget.onPressed != null) {
+          widget.onPressed();
+        }
+      },
+
+      // Main container
+      child: Container(
+        color: CustomCupertinoColors.white,
+
+        // For stacking vertically the item and the separator
+        child: Column(
+          children: <Widget>[
+            // The button contains every children
+            CupertinoButton(
+              padding: EdgeInsets.fromLTRB(12, 0, 4, 0),
+              onPressed: widget.onPressed,
+              // In a row for alignment
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: widget.children,
+              ),
+            ),
+
+            // Only if not last
+            Visibility(
+              child: Padding(
+                // Touches right side but not left
+                padding: EdgeInsets.fromLTRB(12, 0, 0, 0),
+                child: Container(
+                  height: 1,
+                  color: CustomCupertinoColors.systemGray6,
+                ),
+              ),
+              visible: !widget.isLast,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ListSubMenu extends StatefulWidget {
+  ListSubMenu(
+      {@required this.text,
+      this.icon,
+      this.iconBackground,
+      this.badgeCount,
+      this.isLast,
+      this.onPressed});
+
+  final String text;
+  final Color iconBackground;
+  final IconData icon;
+  final int badgeCount;
+  final bool isLast;
+  final VoidCallback onPressed;
+
+  @override
+  _ListSubMenuState createState() => _ListSubMenuState();
+}
+
+class _ListSubMenuState extends State<ListSubMenu> {
+  @override
+  Widget build(BuildContext context) {
+    return ListButton(
+      onPressed: widget.onPressed,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: Container(
+                  color: widget.iconBackground ?? CupertinoColors.activeGreen,
+                  child: Padding(
+                      child: Icon(
+                        widget.icon,
+                        color: CustomCupertinoColors.white,
+                        size: 16,
+                      ),
+                      padding: EdgeInsets.fromLTRB(4, 3, 4, 5))),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Text(widget.text,
+                  style: CustomCupertinoTextStyles.blackStyle),
+            )
+          ],
+        ),
+        Row(
+          children: <Widget>[
+            Visibility(
+              visible: widget.badgeCount != null,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    color: CupertinoColors.destructiveRed,
+                    child: Padding(
+                      child: Text(widget.badgeCount.toString(),
+                          style: CustomCupertinoTextStyles.whiteStyle),
+                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Icon(
+              CupertinoIcons.right_chevron,
+              color: CustomCupertinoColors.systemGray4,
+            )
+          ],
+        )
+      ],
     );
   }
 }

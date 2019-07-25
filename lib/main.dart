@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 
 import 'package:azsphere_obd_app/tabs/map/map.dart';
-import 'package:azsphere_obd_app/globals.dart' as globals;
+import 'package:azsphere_obd_app/tabs/settings/settings.dart';
+import 'package:azsphere_obd_app/globals.dart';
 
 void main() => runApp(MyApp());
 
@@ -10,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Application setup
-   globals.appSettings = globals.Settings();
+    appSettings = Settings();
 
     return CupertinoApp(
       title: 'Azure Sphere OBD Driving Stats',
@@ -92,11 +93,7 @@ class _MainPageState extends State<MainPage> {
           case 4:
           default:
             return CupertinoTabView(builder: (context) {
-              return CupertinoPageScaffold(
-                child: Center(
-                  child: Text("5"),
-                ),
-              );
+              return SettingsTab(title: "Settings");
             });
         }
       },

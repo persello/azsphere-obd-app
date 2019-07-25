@@ -3,10 +3,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:azsphere_obd_app/iosstyles.dart';
-import 'package:azsphere_obd_app/globals.dart' as globals;
+import 'package:azsphere_obd_app/globals.dart';
 
-//import 'package:azsphere_obd_app/iosstyles.dart';
-
+/// Map View Settings page
+/// 
+/// In this page you can change settings related to the [GoogleMap]
+/// control in the [MapTab] page.
 class MapViewSettings extends StatefulWidget {
   MapViewSettings({Key key, this.title, @required this.data}) : super(key: key);
 
@@ -38,12 +40,20 @@ class _MapViewSettingsState extends State<MapViewSettings> {
           ListGroupSpacer(
             title: "View",
           ),
+          ListSwitch(
+            title: "Show my location",
+            onChanged: (bool value) {
+              widget.data.showMyLocation = value;
+              appSettings.save();
+            },
+            initialValue: widget.data.showMyLocation,
+          ),
           GenericListItem(
             child: CupertinoSegmentedControl<int>(
               onValueChanged: (int selectedMapType) {
                 setState(() {
                   widget.data.mapType = MapType.values[selectedMapType];
-                  globals.appSettings.save();
+                  appSettings.save();
                 });
               },
               children: widget.mapTypeChoices,
@@ -51,23 +61,8 @@ class _MapViewSettingsState extends State<MapViewSettings> {
               groupValue: widget.data.mapType.index,
             ),
           ),
-          ListSwitch(
-            title: "Show my location",
-            onChanged: (bool value) {
-              widget.data.showMyLocation = value;
-              globals.appSettings.save();
-            },
-            initialValue: widget.data.showMyLocation,
-          ),
         ],
       ),
     );
   }
-}
-
-class MapViewSettingsData {
-  MapViewSettingsData({this.showMyLocation, this.mapType});
-  bool showMyLocation;
-  // Normal, hybrid or terrain
-  MapType mapType;
 }
