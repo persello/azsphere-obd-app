@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'dart:async';
 
@@ -36,14 +37,19 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   Completer<GoogleMapController> _controller = Completer();
-
   bool _mapActivityIndicatorVisible = true;
-
   void _onMapCreated(GoogleMapController controller) {
+    askLocationPermission();
     _controller.complete(controller);
     setState(() {
       _mapActivityIndicatorVisible = false;
     });
+  }
+
+  askLocationPermission() async {
+    Map<PermissionGroup, PermissionStatus> permissions =
+        await PermissionHandler()
+            .requestPermissions([PermissionGroup.location]);
   }
 
   void _editMapView() {}
@@ -105,6 +111,10 @@ class _MainPageState extends State<MainPage> {
                       initialCameraPosition:
                           CameraPosition(target: LatLng(0, 0), zoom: 1),
                       onMapCreated: _onMapCreated,
+                      compassEnabled: true,
+                      myLocationButtonEnabled: true,
+                      myLocationEnabled: true,
+                      padding: EdgeInsets.fromLTRB(0, 70, 0, 50),
                     ),
                     Center(
                       child: Visibility(
