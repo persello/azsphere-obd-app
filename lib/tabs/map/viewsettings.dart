@@ -18,7 +18,6 @@ class MapViewSettings extends StatefulWidget {
 }
 
 class _MapViewSettingsState extends State<MapViewSettings> {
-
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -29,8 +28,23 @@ class _MapViewSettingsState extends State<MapViewSettings> {
       ),
       child: ListView(
         children: <Widget>[
-          ListGroupSpacer("View"),
-          ListSwitch("Show my location"),
+          ListGroupSpacer(
+            title: "View",
+          ),
+          ListSwitch(
+            title: "Show my location",
+            onChanged: (bool x) {},
+          ),
+          ListSwitch(
+            title: "Satellite view",
+            onChanged: (bool x) {},
+            initialValue: true,
+          ),
+          ListSwitch(
+            title: "Bap",
+            isLast: true,
+            onChanged: (bool x) {},
+          ),
         ],
       ),
     );
