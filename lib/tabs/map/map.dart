@@ -1,3 +1,4 @@
+import 'package:azsphere_obd_app/globals.dart' as globals;
 import 'package:azsphere_obd_app/tabs/map/viewsettings.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:async';
@@ -18,8 +19,6 @@ class _MapTabState extends State<MapTab> {
 
   Completer<GoogleMapController> _controller = Completer();
   bool _mapActivityIndicatorVisible = true;
-  MapViewSettingsData _data = MapViewSettingsData(mapType: MapType.normal, showMyLocation: false);
-
 
   void _onMapCreated(GoogleMapController controller) {
     PermissionHandler().requestPermissions([PermissionGroup.location]);
@@ -30,7 +29,7 @@ class _MapTabState extends State<MapTab> {
   }
 
   void _editMapView() {
-    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(fullscreenDialog: true, builder: (context) => MapViewSettings(title: "Map Settings", data: _data,)));
+    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(fullscreenDialog: true, builder: (context) => MapViewSettings(title: "Map Settings", data: globals.appSettings.mapViewSettingsData,)));
   }
 
   @override
@@ -52,9 +51,9 @@ class _MapTabState extends State<MapTab> {
             onMapCreated: _onMapCreated,
             compassEnabled: true,
             myLocationButtonEnabled: true,
-            myLocationEnabled: _data.showMyLocation,
+            myLocationEnabled: globals.appSettings.mapViewSettingsData.showMyLocation,
             padding: EdgeInsets.fromLTRB(0, 70, 0, 50),
-            mapType: _data.mapType,
+            mapType: globals.appSettings.mapViewSettingsData.mapType,
           ),
           Center(
             child: Visibility(

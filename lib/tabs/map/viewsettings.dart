@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:azsphere_obd_app/iosstyles.dart';
+import 'package:azsphere_obd_app/globals.dart' as globals;
 
 //import 'package:azsphere_obd_app/iosstyles.dart';
 
@@ -26,7 +27,6 @@ class MapViewSettings extends StatefulWidget {
 class _MapViewSettingsState extends State<MapViewSettings> {
   @override
   Widget build(BuildContext context) {
-
     return CupertinoPageScaffold(
       backgroundColor: CustomCupertinoColors.systemGray6,
       navigationBar: CupertinoNavigationBar(
@@ -42,7 +42,8 @@ class _MapViewSettingsState extends State<MapViewSettings> {
             child: CupertinoSegmentedControl<int>(
               onValueChanged: (int selectedMapType) {
                 setState(() {
-                    widget.data.mapType = MapType.values[selectedMapType];
+                  widget.data.mapType = MapType.values[selectedMapType];
+                  globals.appSettings.save();
                 });
               },
               children: widget.mapTypeChoices,
@@ -52,13 +53,11 @@ class _MapViewSettingsState extends State<MapViewSettings> {
           ),
           ListSwitch(
             title: "Show my location",
-            onChanged: (bool value) {widget.data.showMyLocation = value;},
+            onChanged: (bool value) {
+              widget.data.showMyLocation = value;
+              globals.appSettings.save();
+            },
             initialValue: widget.data.showMyLocation,
-          ),
-          ListSwitch(
-            title: "Bap",
-            isLast: true,
-            onChanged: (bool x) {},
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
-import 'tabs/map/map.dart';
+import 'package:azsphere_obd_app/tabs/map/map.dart';
+import 'package:azsphere_obd_app/globals.dart' as globals;
 
 void main() => runApp(MyApp());
 
@@ -8,6 +9,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    // Application setup
+   globals.appSettings = globals.Settings();
+
     return CupertinoApp(
       title: 'Azure Sphere OBD Driving Stats',
       home: MainPage(title: 'Driving Stats'),
@@ -20,13 +24,11 @@ class MainPage extends StatefulWidget {
 
   final String title;
 
-
   @override
   _MainPageState createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-
   @override
   Widget build(BuildContext context) {
     return CupertinoTabScaffold(
