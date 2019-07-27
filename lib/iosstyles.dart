@@ -15,8 +15,15 @@ class CustomCupertinoColors {
   static const Color black = Color.fromARGB(255, 0, 0, 0);
   static const Color transparent = Color.fromARGB(0, 0, 0, 0);
 
-  static const Color red = Color.fromARGB(255, 255, 59, 48);
-  static const Color teal = Color.fromARGB(255, 90, 200, 250);
+  static const Color systemBlue = Color.fromARGB(255, 0, 122, 255);
+  static const Color systemGreen = Color.fromARGB(255, 52, 199, 89);
+  static const Color systemIndigo = Color.fromARGB(255, 88, 86, 214);
+  static const Color systemOrange = Color.fromARGB(255, 255, 149, 0);
+  static const Color systemPink = Color.fromARGB(255, 255, 45, 85);
+  static const Color systemPurple = Color.fromARGB(255, 175, 82, 222);
+  static const Color systemRed = Color.fromARGB(255, 255, 59, 48);
+  static const Color systemTeal = Color.fromARGB(255, 90, 200, 250);
+  static const Color systemYellow = Color.fromARGB(255, 255, 204, 0);
 }
 
 /// Some custom text styles for general usage.
@@ -37,6 +44,10 @@ class CustomCupertinoTextStyles {
   /// A black text style.
   static const TextStyle blackStyle =
       TextStyle(color: CustomCupertinoColors.black);
+
+  /// A black text style.
+  static const TextStyle lightBigTitle =
+      TextStyle(fontSize: 56, fontWeight: FontWeight.w200);
 
   /// A white text style.
   static const TextStyle whiteStyle =
@@ -287,9 +298,9 @@ class ListSubMenu extends StatefulWidget {
   ListSubMenu(
       {@required this.text,
       this.icon,
-      this.iconBackground,
+      this.iconBackground = CustomCupertinoColors.systemGreen,
       this.badgeCount,
-      this.isLast,
+      this.isLast = false,
       this.onPressed});
 
   final String text;
@@ -308,6 +319,7 @@ class _ListSubMenuState extends State<ListSubMenu> {
   Widget build(BuildContext context) {
     return ListButton(
       onPressed: widget.onPressed,
+      isLast: widget.isLast,
       children: <Widget>[
         Row(
           children: <Widget>[

@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:azsphere_obd_app/iosstyles.dart';
 import 'package:azsphere_obd_app/globals.dart';
 import 'package:azsphere_obd_app/tabs/settings/info.dart';
+import 'package:azsphere_obd_app/oobe/welcome.dart';
 
 /// General settings page
 class SettingsTab extends StatefulWidget {
@@ -21,74 +22,79 @@ class _SettingsTabState extends State<SettingsTab> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-        backgroundColor: CustomCupertinoColors.systemGray6,
-        child: CustomScrollView(
-          slivers: <Widget>[
-            CupertinoSliverNavigationBar(largeTitle: Text(widget.title)),
-            SliverFillRemaining(
-              child: Column(
-                children: <Widget>[
-                  ListGroupSpacer(
-                    title: "View",
-                  ),
-                  ListSubMenu(
-                    text: "Menu",
-                    badgeCount: 6,
-                    icon: CupertinoIcons.car,
-                    iconBackground: CupertinoColors.activeGreen,
-                    isLast: true,
-                    onPressed: () {},
-                  ),
-                  ListSubMenu(
-                    text: "Menu",
-                    badgeCount: 6,
-                    icon: CupertinoIcons.car,
-                    iconBackground: CupertinoColors.activeGreen,
-                    isLast: true,
-                    onPressed: () {},
-                  ),
-                  ListSubMenu(
-                    text: "Menu",
-                    badgeCount: 6,
-                    icon: CupertinoIcons.car,
-                    iconBackground: CupertinoColors.activeGreen,
-                    isLast: true,
-                    onPressed: () {},
-                  ),
-                  ListSubMenu(
-                    text: "Menu",
-                    badgeCount: 6,
-                    icon: CupertinoIcons.car,
-                    iconBackground: CupertinoColors.activeGreen,
-                    isLast: true,
-                    onPressed: () {},
-                  ),
-                  ListSubMenu(
-                    text: "Menu",
-                    badgeCount: 6,
-                    icon: CupertinoIcons.car,
-                    iconBackground: CupertinoColors.activeGreen,
-                    isLast: true,
-                    onPressed: () {},
-                  ),
-                  ListGroupSpacer(height: 40),
-                  ListSubMenu(
-                    text: "About",
-                    icon: CupertinoIcons.info_filled,
-                    iconBackground: CustomCupertinoColors.teal,
-                    isLast: true,
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true)
-                          .push(CupertinoPageRoute(
-                              builder: (context) => SettingsInfo(
-                                    title: "About",
-                                  )));
-                    },
-                  ),
-                ],
-              ),
-            )
-          ],
-        ));
+      backgroundColor: CustomCupertinoColors.systemGray6,
+      child: CustomScrollView(
+        slivers: <Widget>[
+          CupertinoSliverNavigationBar(largeTitle: Text(widget.title)),
+          SliverFillRemaining(
+            child: Column(
+              children: <Widget>[
+                ListGroupSpacer(),
+                ListSubMenu(
+                  text: "General",
+                  icon: CupertinoIcons.settings_solid,
+                  iconBackground: CustomCupertinoColors.systemGray,
+                  onPressed: () {},
+                ),
+                ListSubMenu(
+                  text: "Connection",
+                  icon: CupertinoIcons.syncarrows,
+                  iconBackground: CustomCupertinoColors.systemBlue,
+                  onPressed: () {},
+                ),
+                ListSubMenu(
+                  text: "Device",
+                  icon: CupertinoIcons.car,
+                  iconBackground: CustomCupertinoColors.systemOrange,
+                  onPressed: () {},
+                ),
+                ListSubMenu(
+                  text: "Menu",
+                  icon: CupertinoIcons.car,
+                  iconBackground: CustomCupertinoColors.systemIndigo,
+                  isLast: true,
+                  onPressed: () {},
+                ),
+                ListGroupSpacer(height: 40),
+                ListSubMenu(
+                  text: "Vehicle info",
+                  icon: CupertinoIcons.car,
+                  iconBackground: CustomCupertinoColors.systemGreen,
+                  onPressed: () {},
+                ),
+                ListSubMenu(
+                  text: "About",
+                  icon: CupertinoIcons.info_filled,
+                  iconBackground: CustomCupertinoColors.systemTeal,
+                  isLast: true,
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true)
+                        .push(CupertinoPageRoute(
+                            builder: (context) => SettingsInfo(
+                                  title: "About",
+                                  previousTitle: widget.title,
+                                )));
+                  },
+                ),
+                ListGroupSpacer(height: 40),
+                ListSubMenu(
+                  text: "INTERNAL-STARTOOBE",
+                  icon: CupertinoIcons.eye_solid,
+                  iconBackground: CustomCupertinoColors.systemPink,
+                  isLast: true,
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true)
+                        .push(CupertinoPageRoute(
+                            builder: (context) => WelcomePage(
+                                  title: "Welcome",
+                                )));
+                  },
+                )
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

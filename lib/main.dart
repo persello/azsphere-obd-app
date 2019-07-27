@@ -37,22 +37,27 @@ class _MainPageState extends State<MainPage> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.home),
+            activeIcon: Icon(CupertinoIcons.home_solid),
             title: Text('Home'),
           ),
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.navigation_circled),
+            activeIcon: Icon(CupertinoIcons.navigation_circled_solid),
             title: Text('Map'),
           ),
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.pie_chart),
+            activeIcon: Icon(CupertinoIcons.pie_chart_solid),
             title: Text('Data'),
           ),
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.download),
+            activeIcon: Icon(CupertinoIcons.download_solid),
             title: Text('Download'),
           ),
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.settings),
+            activeIcon: Icon(CupertinoIcons.settings_solid),
             title: Text('Settings'),
           ),
         ],

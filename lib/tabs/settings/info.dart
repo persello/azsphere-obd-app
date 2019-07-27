@@ -8,9 +8,10 @@ import 'package:azsphere_obd_app/globals.dart';
 
 /// General settings page
 class SettingsInfo extends StatefulWidget {
-  SettingsInfo({Key key, this.title}) : super(key: key);
+  SettingsInfo({Key key, this.title, this.previousTitle}) : super(key: key);
 
   final String title;
+  final String previousTitle;
 
   @override
   _SettingsInfoState createState() => _SettingsInfoState();
@@ -40,14 +41,16 @@ class _SettingsInfoState extends State<SettingsInfo> {
         child: CustomScrollView(
           slivers: <Widget>[
             CupertinoSliverNavigationBar(
-                largeTitle: Text(widget.title), previousPageTitle: "Settings"),
+                largeTitle: Text(widget.title),
+                previousPageTitle: widget.previousTitle),
             SliverFillRemaining(
               child: Column(
                 children: <Widget>[
                   ListGroupSpacer(
                     title: "About the app",
                   ),
-                  GenericListItem(child: Text("Azure Sphere Driving Statistics\r\nVersion $_version build $_buildNumber."))
+                  GenericListItem(child: Text("Azure Sphere Driving Statistics\r\nVersion $_version build $_buildNumber")),
+                  GenericListItem(child: Text("mikroBUS™ is a MikroElectronica registered trademark.")),
                 ],
               ),
             )
