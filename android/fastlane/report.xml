@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.0095424">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="1: number_of_commits" time="0.1282331">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="2: flutter packages get" time="2.2063366">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="3: flutter clean" time="1.9791875">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="4: flutter build appbundle --build-number=8 --target-platform android-arm,android-arm64" time="88.2617294">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="5: prompt" time="10.9658616">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="6: upload_to_play_store" time="80.3359304">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="7: supply" time="29.0323745">
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>

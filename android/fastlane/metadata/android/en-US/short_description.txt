@@ -1,0 +1,1 @@
+Companion app for the Azure Sphere enabled OBD scanner.
