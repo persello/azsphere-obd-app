@@ -32,6 +32,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
+    //Bottom tab bar and upper container
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
         items: const <BottomNavigationBarItem>[
@@ -62,6 +63,8 @@ class _MainPageState extends State<MainPage> {
           ),
         ],
       ),
+      
+      // Tabs in the container
       tabBuilder: (context, index) {
         switch (index) {
           case 0:

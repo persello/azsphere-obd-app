@@ -1,9 +1,10 @@
 import 'package:flutter/cupertino.dart';
 
-import 'package:access_settings_menu/access_settings_menu.dart';
-
 import 'package:azsphere_obd_app/iosstyles.dart';
+import 'package:azsphere_obd_app/oobe/existingnetworkguide.dart';
+import 'package:azsphere_obd_app/oobe/hotspotguide.dart';
 
+/// Connection page (second page), asks to enable hotspot.
 class ConnectionPage extends StatefulWidget {
   ConnectionPage({Key key, this.title}) : super(key: key);
 
@@ -36,7 +37,7 @@ class _ConnectionPageState extends State<ConnectionPage> {
           ),
           Container(
             child: Text(
-                "In order to search for the device, we need to momentarily disable WiFi and enable your hotspot. This could lead to data charges if you have mobile data enabled. Please turn off mobile data if you aren't sure about your plan.",
+                "In order to search for the device, you'll need to connect the phone and the device to the same network. You can choose between connecting the device to an existing network (if you have a computer) or you can create an hotspot with your mobile phone.",
                 textAlign: TextAlign.center),
             padding: EdgeInsets.symmetric(horizontal: 32),
           ),
@@ -57,9 +58,8 @@ class _ConnectionPageState extends State<ConnectionPage> {
                     showDataAlert(
                       context: context,
                       child: CupertinoActionSheet(
-                        title: Text("Mobile data warning"),
-                        message: Text(
-                            "Please disable mobile data if you think you could be charged for hotspot usage."),
+                        title: Text("Connection method"),
+                        message: Text("Please choose how to proceed."),
                         cancelButton: CupertinoActionSheetAction(
                           child: Text("Cancel"),
                           isDefaultAction: true,
@@ -69,17 +69,25 @@ class _ConnectionPageState extends State<ConnectionPage> {
                         ),
                         actions: <Widget>[
                           CupertinoActionSheetAction(
-                            child: Text("Go to mobile connection settings"),
+                            child: Text("Use an existing network (PC needed)"),
                             onPressed: () {
-                              AccessSettingsMenu.openSettings(
-                                  settingsType:
-                                      "ACTION_NETWORK_OPERATOR_SETTINGS");
-                              Navigator.pop(context);
+                              Navigator.of(context, rootNavigator: true)
+                                ..pop(context)
+                                ..push(CupertinoPageRoute(
+                                    builder: (context) =>
+                                        ExistingNetworkGuidePage(
+                                            title: "Existing network")));
                             },
                           ),
                           CupertinoActionSheetAction(
-                            child: Text("Continue and search for devices"),
-                            onPressed: () {},
+                            child: Text("Use my phone's mobile hotspot"),
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true)
+                                ..pop(context)
+                                ..push(CupertinoPageRoute(
+                                    builder: (context) => HotspotGuidePage(
+                                        title: "Mobile hotspot")));
+                            },
                           )
                         ],
                       ),

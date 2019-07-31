@@ -236,6 +236,10 @@ class GenericListItem extends StatelessWidget {
   }
 }
 
+/// A clickable list item.
+/// 
+/// This generic list item is interactive and acts as a [CupertinoButton].
+/// It is the base of the [ListSubMenu].
 class ListButton extends StatefulWidget {
   ListButton({@required this.children, this.onPressed, this.isLast = false});
   final List<Widget> children;
@@ -294,6 +298,12 @@ class _ListButtonState extends State<ListButton> {
   }
 }
 
+
+/// A complete submenu item (such as these found in the system settings).
+/// 
+/// It has an icon with a background color, a title, an optional counter
+/// ([badgeCount]) and a chevron. If [badgeCount] is null, the badge
+/// will be hidden.
 class ListSubMenu extends StatefulWidget {
   ListSubMenu(
       {@required this.text,
@@ -321,8 +331,11 @@ class _ListSubMenuState extends State<ListSubMenu> {
       onPressed: widget.onPressed,
       isLast: widget.isLast,
       children: <Widget>[
+        // Left side
         Row(
           children: <Widget>[
+
+            // Icon
             ClipRRect(
               borderRadius: BorderRadius.circular(5),
               child: Container(
@@ -335,6 +348,8 @@ class _ListSubMenuState extends State<ListSubMenu> {
                       ),
                       padding: EdgeInsets.fromLTRB(4, 3, 4, 5))),
             ),
+
+            //Title
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 12),
               child: Text(widget.text,
@@ -342,8 +357,12 @@ class _ListSubMenuState extends State<ListSubMenu> {
             )
           ],
         ),
+
+        // Right side
         Row(
           children: <Widget>[
+
+            // Badge counter
             Visibility(
               visible: widget.badgeCount != null,
               child: Padding(
@@ -361,6 +380,8 @@ class _ListSubMenuState extends State<ListSubMenu> {
                 ),
               ),
             ),
+
+            // Chevron
             Icon(
               CupertinoIcons.right_chevron,
               color: CustomCupertinoColors.systemGray4,

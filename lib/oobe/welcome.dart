@@ -4,6 +4,7 @@ import 'package:azsphere_obd_app/iosstyles.dart';
 import 'package:azsphere_obd_app/tabs/settings/info.dart';
 import 'package:azsphere_obd_app/oobe/connection.dart';
 
+/// Welcome page, the first page that appears.
 class WelcomePage extends StatefulWidget {
   WelcomePage({Key key, this.title}) : super(key: key);
 

@@ -1,9 +1,11 @@
+import 'package:azsphere_obd_app/hotspot.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:azsphere_obd_app/tabs/map/viewsettings.dart';
 
 Settings appSettings;
 
+/// The global app settings.
 class Settings {
   Settings() {
     restore();
@@ -28,6 +30,7 @@ class Settings {
   }
 }
 
+/// Map view settings.
 class MapViewSettingsData {
   MapViewSettingsData({this.showMyLocation, this.mapType});
   bool showMyLocation;
