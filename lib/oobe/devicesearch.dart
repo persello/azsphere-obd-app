@@ -12,6 +12,7 @@ class DeviceSearchPage extends StatefulWidget {
   DeviceSearchPage({Key key, this.title}) : super(key: key);
 
   final String title;
+  List<String> availableIpAddresses = List<String>();
 
   @override
   _DeviceSearchPageState createState() => _DeviceSearchPageState();
@@ -23,18 +24,19 @@ class DeviceSearchPage extends StatefulWidget {
     for (int j = 0; j <= 255; j++) {
       String address = subnet + "." + j.toString();
       print("Trying to connect to $address.");
-      await Socket.connect(address, 15500, timeout: Duration(milliseconds: 100))
+      await Socket.connect(address, 15500, timeout: Duration(milliseconds: 10))
           .then((Socket _socket) {
-        Socket socket = _socket;
-        socket.listen(data);
+        _socket.listen(data);
       }).catchError((e) {
-        print(e);
+        if (e.toString().startsWith("SocketException: OS Error")) {
+          availableIpAddresses.add(address);
+        }
       });
     }
   }
 
   void data(data) {
-    print("DATA!");
+    print("DATA RECEIVED: " + new String.fromCharCodes(data).trim());
   }
 }
 
