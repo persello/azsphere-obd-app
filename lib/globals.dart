@@ -1,4 +1,3 @@
-import 'package:azsphere_obd_app/hotspot.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:azsphere_obd_app/tabs/map/viewsettings.dart';

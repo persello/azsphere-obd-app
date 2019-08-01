@@ -5,29 +5,39 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.0063401">
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.0088894">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: number_of_commits" time="0.1595664">
+      <testcase classname="fastlane.lanes" name="1: number_of_commits" time="0.1403815">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: flutter packages get" time="2.9798172">
+      <testcase classname="fastlane.lanes" name="2: flutter packages get" time="2.6105237">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="3: flutter clean" time="3.3489338">
+      <testcase classname="fastlane.lanes" name="3: flutter clean" time="2.4518398">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="4: flutter build appbundle --build-number=11 --target-platform android-arm,android-arm64" time="41.5803281">
+      <testcase classname="fastlane.lanes" name="4: flutter build appbundle --build-number=12 --target-platform android-arm,android-arm64" time="116.7507201">
         
-          <failure message="C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/actions/actions_helper.rb:48:in `execute_action'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/fast_file.rb:212:in `sh'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/fast_file.rb:206:in `sh'&#10;Fastfile:26:in `block (3 levels) in parsing_binding'&#10;Fastfile:23:in `chdir'&#10;Fastfile:23:in `block (2 levels) in parsing_binding'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/lane.rb:33:in `call'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/runner.rb:49:in `block in execute'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/runner.rb:45:in `chdir'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/runner.rb:45:in `execute'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/lane_manager.rb:56:in `cruise_lane'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/command_line_handler.rb:36:in `handle'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/commands_generator.rb:108:in `block (2 levels) in run'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/commander-fastlane-4.4.6/lib/commander/command.rb:178:in `call'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/commander-fastlane-4.4.6/lib/commander/command.rb:153:in `run'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/commander-fastlane-4.4.6/lib/commander/runner.rb:476:in `run_active_command'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:76:in `run!'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/commander-fastlane-4.4.6/lib/commander/delegates.rb:15:in `run!'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/commands_generator.rb:333:in `run'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/commands_generator.rb:41:in `start'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/cli_tools_distributor.rb:119:in `take_off'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/bin/fastlane:23:in `&lt;top (required)&gt;'&#10;C:/Ruby26-x64/bin/fastlane:23:in `load'&#10;C:/Ruby26-x64/bin/fastlane:23:in `&lt;main&gt;'&#10;&#10;Exit status of command 'flutter build appbundle --build-number=11 --target-platform android-arm,android-arm64' was 1 instead of 0.&#10;Initializing gradle...                                              1.7s&#10;Resolving dependencies...                                          22.7s&#10;Running Gradle task 'bundleRelease'...                          &#10;&#10;&#10;Compiler message:&#10;&#10;lib/globals.dart:1:8: Error: Error when reading 'lib/hotspot.dart': The system cannot find the file specified.&#10;&#10;&#10;&#10;import 'package:azsphere_obd_app/hotspot.dart';&#10;&#10;       ^&#10;&#10;Compiler terminated unexpectedly.&#10;&#10;&#10;&#10;FAILURE: Build failed with an exception.&#10;&#10;&#10;&#10;* Where:&#10;&#10;Script 'C:\flutter\packages\flutter_tools\gradle\flutter.gradle' line: 638&#10;&#10;&#10;&#10;* What went wrong:&#10;&#10;Execution failed for task ':app:compileflutterBuildReleaseArm'.&#10;&#10;&gt; Process 'command 'C:\flutter\bin\flutter.bat'' finished with non-zero exit value 1&#10;&#10;&#10;&#10;* Try:&#10;&#10;Run with --stacktrace option to get the stack trace. Run with --info or --debug option to get more log output. Run with --scan to get full insights.&#10;&#10;&#10;&#10;* Get more help at https://help.gradle.org&#10;&#10;&#10;&#10;BUILD FAILED in 14s&#10;Running Gradle task 'bundleRelease'...                             15.4s&#10;Gradle task bundleRelease failed with exit code 1&#10;" />
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="5: prompt" time="57.1172653">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="6: upload_to_play_store" time="74.8981049">
+        
+          <failure message="C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/actions/actions_helper.rb:48:in `execute_action'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/runner.rb:235:in `block in execute_action'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/runner.rb:227:in `chdir'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/runner.rb:227:in `execute_action'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/runner.rb:157:in `trigger_action_by_name'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/fast_file.rb:154:in `method_missing'&#10;Fastfile:29:in `block (2 levels) in parsing_binding'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/lane.rb:33:in `call'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/runner.rb:49:in `block in execute'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/runner.rb:45:in `chdir'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/runner.rb:45:in `execute'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/lane_manager.rb:56:in `cruise_lane'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/command_line_handler.rb:36:in `handle'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/commands_generator.rb:108:in `block (2 levels) in run'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/commander-fastlane-4.4.6/lib/commander/command.rb:178:in `call'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/commander-fastlane-4.4.6/lib/commander/command.rb:153:in `run'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/commander-fastlane-4.4.6/lib/commander/runner.rb:476:in `run_active_command'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:76:in `run!'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/commander-fastlane-4.4.6/lib/commander/delegates.rb:15:in `run!'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/commands_generator.rb:333:in `run'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/commands_generator.rb:41:in `start'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/fastlane/lib/fastlane/cli_tools_distributor.rb:119:in `take_off'&#10;C:/Ruby26-x64/lib/ruby/gems/2.6.0/gems/fastlane-2.128.1/bin/fastlane:23:in `&lt;top (required)&gt;'&#10;C:/Ruby26-x64/bin/fastlane:23:in `load'&#10;C:/Ruby26-x64/bin/fastlane:23:in `&lt;main&gt;'&#10;&#10;Google Api Error: apkNotificationMessageKeyUpgradeVersionConflict: APK specifies a version code that has already been used. - APK specifies a version code that has already been used." />
         
       </testcase>
     

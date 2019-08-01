@@ -5,7 +5,7 @@ import 'package:access_settings_menu/access_settings_menu.dart';
 import 'package:azsphere_obd_app/iosstyles.dart';
 import 'package:azsphere_obd_app/oobe/devicesearch.dart';
 
-/// Connection page (second page), asks to enable hotspot.
+/// Connection page (second page), guide for connecting to an existing network.
 class ExistingNetworkGuidePage extends StatefulWidget {
   ExistingNetworkGuidePage({Key key, this.title}) : super(key: key);
 
@@ -34,7 +34,7 @@ class _ExistingNetworkGuidePageState extends State<ExistingNetworkGuidePage> {
           ),
           Container(
             child: Text(
-                "You'll need to access the device's settings via the command line, so you must have access to it.\r\n\r\n After installing the Azure Sphere SDK on your computer add your WiFi network with the following command:\r\n\r\nazsphere device wifi add -s <SSID> -k <PASSWORD>\r\n\r\nWhere SSID and PASSWORD are your network's name and passphrase. Please add the same network to which this phone is connected.",
+                "You'll need to access the device's settings via the command line, so you must be authorized to do it.\r\n\r\n After installing the Azure Sphere SDK on your computer add your WiFi network with the following command:\r\n\r\nazsphere device wifi add -s <SSID> -k <PASSWORD>\r\n\r\nWhere SSID and PASSWORD are your network's name and passphrase. Please add the same network to which this phone is connected.",
                 textAlign: TextAlign.center),
             padding: EdgeInsets.symmetric(horizontal: 32),
           ),
@@ -55,7 +55,7 @@ class _ExistingNetworkGuidePageState extends State<ExistingNetworkGuidePage> {
                     Navigator.of(context, rootNavigator: true)
                         .push(CupertinoPageRoute(
                             builder: (context) => DeviceSearchPage(
-                                  title: "Searching device",
+                                  title: "Searching",
                                 )));
                   },
                 )

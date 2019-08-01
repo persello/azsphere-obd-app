@@ -52,7 +52,7 @@ class _HotspotGuidePageState extends State<HotspotGuidePage> {
                     Navigator.of(context, rootNavigator: true)
                         .push(CupertinoPageRoute(
                             builder: (context) => DeviceSearchPage(
-                                  title: "Searching device",
+                                  title: "Searching",
                                 )));
                   },
                 )

@@ -1,7 +1,11 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 
 import 'package:azsphere_obd_app/iosstyles.dart';
 import 'package:azsphere_obd_app/globals.dart';
+import 'package:wifi/wifi.dart';
 
 /// Device search and listing page (third one)
 class DeviceSearchPage extends StatefulWidget {
@@ -11,11 +15,34 @@ class DeviceSearchPage extends StatefulWidget {
 
   @override
   _DeviceSearchPageState createState() => _DeviceSearchPageState();
+
+  void scan() async {
+    final String ip = await Wifi.ip;
+    final String subnet = ip.substring(0, ip.lastIndexOf('.'));
+
+    for (int j = 0; j <= 255; j++) {
+      String address = subnet + "." + j.toString();
+      print("Trying to connect to $address.");
+      await Socket.connect(address, 15500, timeout: Duration(milliseconds: 100))
+          .then((Socket _socket) {
+        Socket socket = _socket;
+        socket.listen(data);
+      }).catchError((e) {
+        print(e);
+      });
+    }
+  }
+
+  void data(data) {
+    print("DATA!");
+  }
 }
 
 class _DeviceSearchPageState extends State<DeviceSearchPage> {
   @override
   Widget build(BuildContext context) {
+    widget.scan();
+
     return CupertinoPageScaffold(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
