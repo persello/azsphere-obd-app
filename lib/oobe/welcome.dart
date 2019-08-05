@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:azsphere_obd_app/iosstyles.dart';
 import 'package:azsphere_obd_app/tabs/settings/info.dart';
 import 'package:azsphere_obd_app/oobe/connection.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 /// Welcome page, the first page that appears.
 class WelcomePage extends StatefulWidget {
@@ -30,10 +31,29 @@ class _WelcomePageState extends State<WelcomePage> {
             ),
             padding: EdgeInsets.only(top: 120),
           ),
+          Image.asset(
+            "assets/1.png",
+            height: 350,
+          ),
           Container(
-            child: Text(
-                "Welcome to the Azure Sphere Driving Statistics app. This application allows you to continuously get some parameters from your car by communicating with an OBD adapter created with an Azure Sphere Starter Kit and an OBD-2 mikroBUS™ click. The data from your car's ECU (electronic control unit) is then analyzed by this application and shown to you on a map and in easy-to-read charts. An additional GPS adds location data to your statistics.\r\n\r\nLet's start by configuring the wireless connection with the tool.",
-                textAlign: TextAlign.center),
+            child: CarouselSlider(
+              height: 80,
+              viewportFraction: 1.0,
+              autoPlay: true,
+              autoPlayInterval: Duration(seconds: 6),
+              pauseAutoPlayOnTouch: Duration(seconds: 12),
+              items: <Widget>[
+                Text(
+                    "Welcome to the Azure Sphere Driving Statistics app. This application allows you to continuously get some parameters from your car.",
+                    textAlign: TextAlign.center),
+                Text(
+                    "By communicating with an OBD adapter created with an Azure Sphere Starter Kit and an OBD-2 mikroBUS™ click, the data from your car's ECU (electronic control unit) can be analyzed by this application.",
+                    textAlign: TextAlign.center),
+                    Text(
+                    "By periodically downloading your data from the adapter we can show you some maps and charts with useful insights about your driving habits.",
+                    textAlign: TextAlign.center),
+              ],
+            ),
             padding: EdgeInsets.symmetric(horizontal: 32),
           ),
           Container(

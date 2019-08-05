@@ -3,8 +3,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:azsphere_obd_app/tabs/map/map.dart';
 import 'package:azsphere_obd_app/tabs/settings/settings.dart';
 import 'package:azsphere_obd_app/globals.dart';
+import 'package:flutter/services.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  // Limit to vertical orientation until layout is responsive.
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+    .then((_) {
+      runApp(new MyApp());
+    });
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.

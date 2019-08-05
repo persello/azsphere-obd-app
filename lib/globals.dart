@@ -6,6 +6,8 @@ Settings appSettings;
 
 /// The global app settings.
 class Settings {
+
+  // On creation we load everything into the object.
   Settings() {
     restore();
   }
@@ -14,18 +16,26 @@ class Settings {
 
   restore() async {
     final SharedPreferences sp = await SharedPreferences.getInstance();
+
+    // Map settings
     this.mapViewSettingsData.mapType = MapType.values[
         sp.getInt("mapViewSettingsData_mapType") ?? MapType.normal.index];
     this.mapViewSettingsData.showMyLocation =
         sp.getBool("mapViewSettingsData_showMyLocation") ?? true;
+
+
   }
 
   void save() async {
     final SharedPreferences sp = await SharedPreferences.getInstance();
+
+    // Map settings
     sp.setInt(
         "mapViewSettingsData_mapType", this.mapViewSettingsData.mapType.index);
     sp.setBool("mapViewSettingsData_showMyLocation",
         this.mapViewSettingsData.showMyLocation);
+
+        
   }
 }
 
