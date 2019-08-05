@@ -36,10 +36,10 @@ class OBDScanner {
   Function(OBDScanner, OBDScannerStatus) onConnectionChanged;
   Function(TCPMessage) onMessageReceived;
 
-  Function() onButtonAPressed;
-  Function() onButtonBPressed;
+  Function(OBDScanner) onButtonAPressed;
+  Function(OBDScanner) onButtonBPressed;
 
-  String _receiveBuffer;
+  StringBuffer _receiveBuffer = new StringBuffer();
 
   // Constructor
   OBDScanner(
@@ -107,27 +107,32 @@ class OBDScanner {
   }
 
   void _newTCPData(data) {
-   String received = new String.fromCharCodes(data).trim();
+   String received = new String.fromCharCodes(data);
 
     if (status == OBDScannerStatus.STATUS_UNKNOWN && received.startsWith("Azure Sphere OBD Scanner")) {
       status = OBDScannerStatus.STATUS_IDLE;
       onConnectionChanged(this, status);
       print("DATA RECEIVED ($ipAddress)!");
+      return;
     }
 
-    /*print(
+    print(
         "OBDScanner class - newTCPData: Received data from the device: $received.");
-    _receiveBuffer += received;
-    if (_receiveBuffer.contains("\r\n")) {
+    _receiveBuffer.write(received);
+    if (_receiveBuffer.toString().contains("\r\n")) {
       print(
           "OBDScanner class - newTCPData: The receive buffer contains a message.");
-      int indexOfReturn = _receiveBuffer.indexOf("\r\n");
+      int indexOfReturn = _receiveBuffer.toString().indexOf("\r\n");
 
       // We consider the current message's string as the first part of the buffer, until the \r character
-      String currentMessageString = _receiveBuffer.substring(0, indexOfReturn);
+      String currentMessageString = _receiveBuffer.toString().substring(0, indexOfReturn);
 
-      // And we remove it from the buffer along with the first \r\n
-      _receiveBuffer = _receiveBuffer.substring(indexOfReturn + 2);
+      // Then we consider the remaining part
+      String temp = _receiveBuffer.toString().substring(indexOfReturn + 2);
+
+      // And we reset the buffer by re-adding only that
+      _receiveBuffer.clear();
+      _receiveBuffer.write(temp);
 
       // We create a message with the extracted part...
       TCPMessage message = TCPMessage.fromString(currentMessageString);
@@ -135,7 +140,7 @@ class OBDScanner {
       if (!filterMessage(message)) {
         onMessageReceived(message);
       }
-    }*/
+    }
   }
 
   /// Filters messages such as ping because are not useful for the user.
@@ -150,10 +155,10 @@ class OBDScanner {
         lastSuccessfulPing = DateTime.now();
         break;
       case "BTNA":
-        onButtonAPressed();
+        onButtonAPressed(this);
         break;
       case "BTNB":
-        onButtonBPressed();
+        onButtonBPressed(this);
         break;
       default:
         ret = false;

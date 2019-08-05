@@ -76,7 +76,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
         title: "Connected")
   };
 
-  List<OBDScanner> availableScanners = List<OBDScanner>();
+  OBDScanner foundScanner;
   CurrentStatus currentSearchStatus;
   DevicePageControlsState devicePageControlsState;
   Timer scanTimer;
@@ -85,7 +85,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
   int j = 0;
   OBDScanner currentScanner;
 
-  void initializeScan(Timer t) async {
+  void scanForDevices(Timer t) async {
     ip = await Wifi.ip;
 
     final String subnet = ip.substring(0, ip.lastIndexOf('.'));
@@ -101,8 +101,21 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
 
       currentScanner.connect();
     } else if (j >= 255) {
-      // TODO: loop finished
+      j = 0;
     }
+  }
+
+  void attachButtonPress() {
+    foundScanner.connect();
+    foundScanner.onConnectionChanged = ((OBDScanner s, OBDScannerStatus st) {});
+    foundScanner.onButtonAPressed = deviceButtonPressHandler;
+  }
+
+  void deviceButtonPressHandler(OBDScanner s) {
+    setState(() {
+      currentSearchStatus = CurrentStatus.DEVICE_FOUND;
+      devicePageControlsState = states[currentSearchStatus];
+    });
   }
 
   void scannerStatusChanged(OBDScanner scanner, OBDScannerStatus status) {
@@ -110,9 +123,13 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     if (status != OBDScannerStatus.STATUS_DISCONNECTED &&
         status != OBDScannerStatus.STATUS_UNKNOWN) {
       print("${scanner.ipAddress} is available!");
-      if (!availableScanners.contains(scanner)) {
-        availableScanners.add(scanner);
-      }
+      foundScanner = scanner;
+      setState(() {
+        currentSearchStatus = CurrentStatus.DEVICE_BTN_WAIT;
+        devicePageControlsState = states[currentSearchStatus];
+      });
+      attachButtonPress();
+      scanTimer.cancel();
       scanner.closeConnection();
     }
   }
@@ -120,7 +137,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
   @override
   void initState() {
     super.initState();
-    scanTimer = Timer.periodic(Duration(milliseconds: 50), initializeScan);
+    scanTimer = Timer.periodic(Duration(milliseconds: 50), scanForDevices);
     currentSearchStatus = CurrentStatus.SEARCHING;
     devicePageControlsState = states[currentSearchStatus];
   }
@@ -130,6 +147,9 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     super.dispose();
     if (scanTimer != null) {
       scanTimer.cancel();
+    }
+    if (foundScanner != null) {
+      foundScanner.closeConnection();
     }
   }
 
