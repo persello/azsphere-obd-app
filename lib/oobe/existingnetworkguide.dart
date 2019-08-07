@@ -5,6 +5,8 @@ import 'package:access_settings_menu/access_settings_menu.dart';
 import 'package:azsphere_obd_app/iosstyles.dart';
 import 'package:azsphere_obd_app/oobe/devicesearch.dart';
 
+import 'package:carousel_slider/carousel_slider.dart';
+
 /// Connection page (second page), guide for connecting to an existing network.
 class ExistingNetworkGuidePage extends StatefulWidget {
   ExistingNetworkGuidePage({Key key, this.title}) : super(key: key);
@@ -32,10 +34,29 @@ class _ExistingNetworkGuidePageState extends State<ExistingNetworkGuidePage> {
             ),
             padding: EdgeInsets.only(top: 120),
           ),
+          Image.asset(
+            "assets/3.png",
+            height: 350,
+          ),
           Container(
-            child: Text(
-                "You'll need to access the device's settings via the command line, so you must be authorized to do it.\r\n\r\n After installing the Azure Sphere SDK on your computer add your WiFi network with the following command:\r\n\r\nazsphere device wifi add -s <SSID> -k <PASSWORD>\r\n\r\nWhere SSID and PASSWORD are your network's name and passphrase. Please add the same network to which this phone is connected.",
-                textAlign: TextAlign.center),
+            child: CarouselSlider(
+              height: 80,
+              viewportFraction: 1.0,
+              autoPlay: true,
+              autoPlayInterval: Duration(seconds: 6),
+              pauseAutoPlayOnTouch: Duration(seconds: 12),
+              items: <Widget>[
+                Text(
+                    "First, be sure you can access the device's command line interface, then install the Azure Sphere SDK.",
+                    textAlign: TextAlign.center),
+                Text(
+                    "Open the Azure Sphere Command Line on your PC and run the following command:\r\n\r\nazsphere device wifi add -s SSID -k PASSWORD.",
+                    textAlign: TextAlign.center),
+                Text(
+                    "SSID and PASSWORD are respectively your network's name and its password.",
+                    textAlign: TextAlign.center),
+              ],
+            ),
             padding: EdgeInsets.symmetric(horizontal: 32),
           ),
           Container(

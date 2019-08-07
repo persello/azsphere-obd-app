@@ -405,7 +405,7 @@ class ListWiFiItem extends StatefulWidget {
   final bool protected;
   final bool known;
 
-  Function(String, bool)
+  //Function(String, bool);
 
   @override
   _ListWiFiItemState createState() => _ListWiFiItemState();

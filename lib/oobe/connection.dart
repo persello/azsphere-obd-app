@@ -35,6 +35,10 @@ class _ConnectionPageState extends State<ConnectionPage> {
             ),
             padding: EdgeInsets.only(top: 120),
           ),
+          Image.asset(
+            "assets/2.png",
+            height: 350,
+          ),
           Container(
             child: Text(
                 "In order to search for the device, you'll need to connect the phone and the device to the same network. ",

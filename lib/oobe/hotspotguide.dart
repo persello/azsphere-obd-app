@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
+import 'package:carousel_slider/carousel_slider.dart';
+
 import 'package:azsphere_obd_app/iosstyles.dart';
 import 'package:azsphere_obd_app/oobe/devicesearch.dart';
 
@@ -29,10 +31,32 @@ class _HotspotGuidePageState extends State<HotspotGuidePage> {
             ),
             padding: EdgeInsets.only(top: 120),
           ),
+          Image.asset(
+            "assets/4.png",
+            height: 350,
+          ),
           Container(
-            child: Text(
-                "The device should be preconfigured to connect to a network with defined SSID and password. You can create an hotspot with your phone with the following details:\r\n\r\nSSID: OBDAZURESPHERECONF\r\n\r\nPassword: AZUREOBD\r\n\r\nPlease remember that your mobile carrier may charge you for hotspot usage. If supported, enable the hotspot without mobile data.",
-                textAlign: TextAlign.center),
+            child: CarouselSlider(
+              height: 80,
+              viewportFraction: 1.0,
+              autoPlay: true,
+              autoPlayInterval: Duration(seconds: 6),
+              pauseAutoPlayOnTouch: Duration(seconds: 12),
+              items: <Widget>[
+                Text(
+                    "The device is configured to connect to a pre-set network with defined properties.",
+                    textAlign: TextAlign.center),
+                Text(
+                    "You can create an hotspot with your phone and get the board automatically connected.",
+                    textAlign: TextAlign.center),
+                Text(
+                    "Set your hotspot's SSID (name) to \"OBDAZURESPHERECONF\" and its password to \"AZUREOBD\"",
+                    textAlign: TextAlign.center),
+                Text(
+                    "Remember that your mobile carrier may charge you for hotspot usage. If in doubt, disable mobile data first.",
+                    textAlign: TextAlign.center),
+              ],
+            ),
             padding: EdgeInsets.symmetric(horizontal: 32),
           ),
           Container(
