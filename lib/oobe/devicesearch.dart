@@ -6,9 +6,10 @@ import 'package:flutter/foundation.dart';
 
 import 'package:azsphere_obd_app/iosstyles.dart';
 import 'package:azsphere_obd_app/globals.dart';
-import 'package:flutter/semantics.dart';
-import 'package:wifi/wifi.dart';
 import 'package:azsphere_obd_app/classes/device.dart';
+import 'package:azsphere_obd_app/oobe/addnetworks.dart';
+
+import 'package:wifi/wifi.dart';
 
 /// Device search and listing page (third one)
 class DeviceSearchPage extends StatefulWidget {
@@ -30,7 +31,7 @@ class DevicePageControlsState {
   String content;
 }
 
-enum CurrentStatus {
+enum SearchStatus {
   WIFI_DISCONNECTED,
   SEARCHING,
   DEVICE_FOUND,
@@ -41,35 +42,24 @@ enum CurrentStatus {
 
 class _DeviceSearchPageState extends State<DeviceSearchPage> {
   final states = {
-    CurrentStatus.WIFI_DISCONNECTED: DevicePageControlsState(
+    SearchStatus.WIFI_DISCONNECTED: DevicePageControlsState(
         buttonEnabled: false,
         content:
             "Before continuing, connect to a Wi-Fi network or set up your hotspot with the given properties.",
         spinnerVisible: false,
         title: "Connect"),
-    CurrentStatus.SEARCHING: DevicePageControlsState(
+    SearchStatus.SEARCHING: DevicePageControlsState(
         buttonEnabled: false,
         content: null,
         spinnerVisible: true,
         title: "Searching"),
-    CurrentStatus.DEVICE_FOUND: DevicePageControlsState(
-        buttonEnabled: false,
-        content: null,
-        spinnerVisible: true,
-        title: "Found"),
-    CurrentStatus.DEVICE_BTN_WAIT: DevicePageControlsState(
+    SearchStatus.DEVICE_BTN_WAIT: DevicePageControlsState(
         buttonEnabled: false,
         content:
             "Please press the \"A\" button on the device to confirm the connection.",
         spinnerVisible: false,
         title: "Confirm"),
-    CurrentStatus.DEVICE_OOBE_DENIED: DevicePageControlsState(
-        buttonEnabled: false,
-        content:
-            "This device has already been set-up. If you want to reconfigure it, you'll need to reset it first.",
-        spinnerVisible: false,
-        title: "Error"),
-    CurrentStatus.FINISHED: DevicePageControlsState(
+    SearchStatus.FINISHED: DevicePageControlsState(
         buttonEnabled: true,
         content: "We'll now proceed to adding some networks to the device.",
         spinnerVisible: false,
@@ -77,68 +67,123 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
   };
 
   OBDScanner foundScanner;
-  CurrentStatus currentSearchStatus;
+  SearchStatus currentSearchStatus;
   DevicePageControlsState devicePageControlsState;
   Timer scanTimer;
   String ip;
+  int currentAddressIndex = 0;
   bool goToNextIP = true;
-  int j = 0;
   OBDScanner currentScanner;
+  bool showNotice = false;
 
   void scanForDevices(Timer t) async {
     ip = await Wifi.ip;
 
+    if (!ip.startsWith("192.168") &&
+        currentSearchStatus != SearchStatus.WIFI_DISCONNECTED) {
+      setState(() {
+        currentSearchStatus = SearchStatus.WIFI_DISCONNECTED;
+        devicePageControlsState = states[currentSearchStatus];
+      });
+    } else if (ip.startsWith("192.168") &&
+        currentSearchStatus == SearchStatus.WIFI_DISCONNECTED) {
+      setState(() {
+        currentSearchStatus = SearchStatus.SEARCHING;
+        devicePageControlsState = states[currentSearchStatus];
+      });
+    }
+
     final String subnet = ip.substring(0, ip.lastIndexOf('.'));
 
-    if (goToNextIP && j < 255) {
+    if (goToNextIP && currentAddressIndex < 255) {
       goToNextIP = false;
-      j++;
-      String address = subnet + "." + j.toString();
+      currentAddressIndex++;
+      String address = subnet + "." + currentAddressIndex.toString();
       print("Trying to connect to $address.");
 
       currentScanner = OBDScanner(
-          ipAddress: address, onConnectionChanged: scannerStatusChanged);
+          ipAddress: address,
+          onConnectionChanged: scannerConnectionChangedDuringScan);
 
       currentScanner.connect();
-    } else if (j >= 255) {
-      j = 0;
+    } else if (currentAddressIndex >= 255) {
+      currentAddressIndex = 0;
     }
   }
 
   void attachButtonPress() {
     foundScanner.connect();
-    foundScanner.onConnectionChanged = ((OBDScanner s, OBDScannerStatus st) {});
+    foundScanner.onConnectionChanged = scannerConnectionChanged;
     foundScanner.onButtonAPressed = deviceButtonPressHandler;
   }
 
   void deviceButtonPressHandler(OBDScanner s) {
     setState(() {
-      currentSearchStatus = CurrentStatus.DEVICE_FOUND;
+      currentSearchStatus = SearchStatus.FINISHED;
       devicePageControlsState = states[currentSearchStatus];
     });
   }
 
-  void scannerStatusChanged(OBDScanner scanner, OBDScannerStatus status) {
+  void scannerConnectionChangedDuringScan(
+      OBDScanner scanner, OBDScannerConnectionStatus status) {
     goToNextIP = true;
-    if (status != OBDScannerStatus.STATUS_DISCONNECTED &&
-        status != OBDScannerStatus.STATUS_UNKNOWN) {
+    if (status != OBDScannerConnectionStatus.STATUS_DISCONNECTED &&
+        status != OBDScannerConnectionStatus.STATUS_UNKNOWN) {
       print("${scanner.ipAddress} is available!");
       foundScanner = scanner;
       setState(() {
-        currentSearchStatus = CurrentStatus.DEVICE_BTN_WAIT;
+        currentSearchStatus = SearchStatus.DEVICE_BTN_WAIT;
         devicePageControlsState = states[currentSearchStatus];
       });
-      attachButtonPress();
       scanTimer.cancel();
       scanner.closeConnection();
+      // Socket actions on the board are delayed
+      sleep(Duration(milliseconds: 1100));
+      attachButtonPress();
     }
+  }
+
+  void scannerConnectionChanged(
+      OBDScanner scanner, OBDScannerConnectionStatus status) {
+    if (status == OBDScannerConnectionStatus.STATUS_DISCONNECTED) {
+      scanTimer = Timer.periodic(Duration(milliseconds: 50), scanForDevices);
+      foundScanner.onConnectionChanged = null;
+      setState(() {
+        currentSearchStatus = SearchStatus.SEARCHING;
+        devicePageControlsState = states[currentSearchStatus];
+      });
+    }
+  }
+
+  void continueButtonPressed() {
+    globalScanner = foundScanner;
+    foundScanner = null;
+    if (scanTimer != null) scanTimer.cancel();
+    Navigator.of(context, rootNavigator: true)
+        .push(CupertinoPageRoute(
+            builder: (context) => AddNetworksPage(
+                  title: "Add networks",
+                )))
+        .then((f) {
+      // When coming back again
+      initPage();
+    });
   }
 
   @override
   void initState() {
     super.initState();
+    initPage();
+  }
+
+  void initPage() {
+    Timer(Duration(seconds: 60), (() {
+      setState(() {
+        showNotice = true;
+      });
+    }));
     scanTimer = Timer.periodic(Duration(milliseconds: 50), scanForDevices);
-    currentSearchStatus = CurrentStatus.SEARCHING;
+    currentSearchStatus = SearchStatus.SEARCHING;
     devicePageControlsState = states[currentSearchStatus];
   }
 
@@ -150,6 +195,9 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     }
     if (foundScanner != null) {
       foundScanner.closeConnection();
+    }
+    if (globalScanner != null) {
+      globalScanner.closeConnection();
     }
   }
 
@@ -169,14 +217,42 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
             padding: EdgeInsets.only(top: 120),
           ),
           Container(
-              child: Center(
-            child: Visibility(
-              visible: devicePageControlsState.spinnerVisible,
-              child: CupertinoActivityIndicator(
-                animating: true,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Visibility(
+                  visible: devicePageControlsState.spinnerVisible,
+                  child: CupertinoActivityIndicator(
+                    animating: true,
+                  ),
+                ),
+                devicePageControlsState.content != null
+                    ? Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 40),
+                        child: Container(
+                            width: 250,
+                            child: Text(
+                              devicePageControlsState.content,
+                              textAlign: TextAlign.center,
+                            )))
+                    : Container()
+              ],
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 50),
+            child: AnimatedOpacity(
+              opacity:
+                  (showNotice && currentSearchStatus == SearchStatus.SEARCHING)
+                      ? 1.0
+                      : 0.0,
+              duration: Duration(milliseconds: 300),
+              child: Text(
+                "The scan is taking longer than expected.\r\n\r\n- Check that the device is powered on.\r\n- Try again to follow the previous steps.\r\n- Reset the device.",
+                textAlign: TextAlign.center,
               ),
             ),
-          )),
+          ),
           Container(
             padding: EdgeInsets.all(24),
             child: Row(
@@ -190,7 +266,9 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
                 CupertinoButton(
                   child: Text("Continue"),
                   color: CustomCupertinoColors.systemBlue,
-                  onPressed: null,
+                  onPressed: devicePageControlsState.buttonEnabled
+                      ? continueButtonPressed
+                      : null,
                 )
               ],
             ),

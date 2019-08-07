@@ -37,7 +37,7 @@ class _ConnectionPageState extends State<ConnectionPage> {
           ),
           Container(
             child: Text(
-                "In order to search for the device, you'll need to connect the phone and the device to the same network. You can choose between connecting the device to an existing network (if you have a computer) or you can create an hotspot with your mobile phone.",
+                "In order to search for the device, you'll need to connect the phone and the device to the same network. ",
                 textAlign: TextAlign.center),
             padding: EdgeInsets.symmetric(horizontal: 32),
           ),

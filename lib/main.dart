@@ -8,9 +8,12 @@ import 'package:flutter/services.dart';
 void main() {
   // Limit to vertical orientation until layout is responsive.
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-    .then((_) {
-      runApp(new MyApp());
-    });
+      .then((_) {
+    runApp(new MyApp());
+  });
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
+    statusBarColor: Color.fromARGB(0, 0, 0, 0),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -70,7 +73,7 @@ class _MainPageState extends State<MainPage> {
           ),
         ],
       ),
-      
+
       // Tabs in the container
       tabBuilder: (context, index) {
         switch (index) {

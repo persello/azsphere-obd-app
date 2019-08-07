@@ -47,7 +47,7 @@ class CustomCupertinoTextStyles {
 
   /// A black text style.
   static const TextStyle lightBigTitle =
-      TextStyle(fontSize: 56, fontWeight: FontWeight.w200);
+      TextStyle(fontSize: 56, fontWeight: FontWeight.w600);
 
   /// A white text style.
   static const TextStyle whiteStyle =
@@ -237,7 +237,7 @@ class GenericListItem extends StatelessWidget {
 }
 
 /// A clickable list item.
-/// 
+///
 /// This generic list item is interactive and acts as a [CupertinoButton].
 /// It is the base of the [ListSubMenu].
 class ListButton extends StatefulWidget {
@@ -298,9 +298,8 @@ class _ListButtonState extends State<ListButton> {
   }
 }
 
-
 /// A complete submenu item (such as these found in the system settings).
-/// 
+///
 /// It has an icon with a background color, a title, an optional counter
 /// ([badgeCount]) and a chevron. If [badgeCount] is null, the badge
 /// will be hidden.
@@ -334,7 +333,6 @@ class _ListSubMenuState extends State<ListSubMenu> {
         // Left side
         Row(
           children: <Widget>[
-
             // Icon
             ClipRRect(
               borderRadius: BorderRadius.circular(5),
@@ -361,7 +359,6 @@ class _ListSubMenuState extends State<ListSubMenu> {
         // Right side
         Row(
           children: <Widget>[
-
             // Badge counter
             Visibility(
               visible: widget.badgeCount != null,
@@ -389,6 +386,160 @@ class _ListSubMenuState extends State<ListSubMenu> {
           ],
         )
       ],
+    );
+  }
+}
+
+/// An item for a list which can represent a Wi-Fi network.
+///
+/// Allows for various parameters and actions, such as SSID,
+/// signal power, add and remove buttons, connected indicator
+/// and whether it is protected or not.
+class ListWiFiItem extends StatefulWidget {
+  ListWiFiItem(
+      this.ssid, this.signal, this.connected, this.protected, this.known);
+
+  final String ssid;
+  final int signal;
+  final bool connected;
+  final bool protected;
+  final bool known;
+
+  Function(String, bool)
+
+  @override
+  _ListWiFiItemState createState() => _ListWiFiItemState();
+}
+
+class _ListWiFiItemState extends State<ListWiFiItem> {
+  @override
+  Widget build(BuildContext context) {
+    return GenericListItem(
+      child: Container(
+        height: 30,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.fromLTRB(4, 0, 20, 0),
+                  width: 68,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          height: 6,
+                          width: 6,
+                          color: widget.signal >= 1
+                              ? (widget.connected
+                                  ? CustomCupertinoColors.systemBlue
+                                  : CustomCupertinoColors.black)
+                              : CustomCupertinoColors.systemGray5,
+                        ),
+                      ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          height: 6,
+                          width: 6,
+                          color: widget.signal >= 2
+                              ? (widget.connected
+                                  ? CustomCupertinoColors.systemBlue
+                                  : CustomCupertinoColors.black)
+                              : CustomCupertinoColors.systemGray5,
+                        ),
+                      ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          height: 6,
+                          width: 6,
+                          color: widget.signal >= 3
+                              ? (widget.connected
+                                  ? CustomCupertinoColors.systemBlue
+                                  : CustomCupertinoColors.black)
+                              : CustomCupertinoColors.systemGray5,
+                        ),
+                      ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          height: 6,
+                          width: 6,
+                          color: widget.signal >= 4
+                              ? (widget.connected
+                                  ? CustomCupertinoColors.systemBlue
+                                  : CustomCupertinoColors.black)
+                              : CustomCupertinoColors.systemGray5,
+                        ),
+                      ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          height: 6,
+                          width: 6,
+                          color: widget.signal >= 5
+                              ? (widget.connected
+                                  ? CustomCupertinoColors.systemBlue
+                                  : CustomCupertinoColors.black)
+                              : CustomCupertinoColors.systemGray5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Visibility(
+                  visible: widget.protected,
+                  child: Container(
+                    child: Icon(
+                      CupertinoIcons.padlock_closed,
+                      size: 20,
+                    ),
+                    padding: EdgeInsets.fromLTRB(0, 0, 8, 6),
+                  ),
+                ),
+                Text(widget.ssid),
+              ],
+            ),
+            Row(
+              children: <Widget>[
+                Visibility(
+                  visible: (widget.known && !widget.connected),
+                  child: Container(
+                    child: CupertinoButton(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Icon(
+                        CupertinoIcons.remove_item_solid,
+                        color: CupertinoColors.destructiveRed,
+                        size: 20,
+                      ),
+                      onPressed: () {},
+                    ),
+                  ),
+                ),
+                Visibility(
+                  visible: !widget.known,
+                  child: Container(
+                    child: CupertinoButton(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Icon(
+                        CupertinoIcons.add,
+                        size: 20,
+                      ),
+                      onPressed: () {},
+                    ),
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
     );
   }
 }
