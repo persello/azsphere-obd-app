@@ -1,12 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:azsphere_obd_app/iosstyles.dart';
-import 'package:azsphere_obd_app/globals.dart';
 import 'package:azsphere_obd_app/classes/device.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:azsphere_obd_app/globals.dart';
 
 class AddNetworksPage extends StatefulWidget {
   AddNetworksPage({Key key, this.title}) : super(key: key);
@@ -18,8 +15,52 @@ class AddNetworksPage extends StatefulWidget {
 }
 
 class _AddNetworksPageState extends State<AddNetworksPage> {
+  List<WiFiNetwork> networks = List<WiFiNetwork>();
+
+  @override
+  void initState() {
+    super.initState();
+    //globalScanner.connect();
+    globalScanner.onConnectionChanged = connectionChanged;
+    globalScanner.onMessageReceived = messageReceived;
+    requestNetworks();
+  }
+
+  void requestNetworks() {
+    globalScanner
+        .sendMessage(TCPMessage(header: MessageHeader_ScanWiFiNetworks));
+    globalScanner
+        .sendMessage(TCPMessage(header: MessageHeader_KnownWiFiNetworks));
+  }
+
+  void connectionChanged(OBDScanner s, OBDScannerConnectionStatus status) {
+    if (status == OBDScannerConnectionStatus.STATUS_DISCONNECTED) {
+      s.connect();
+    }
+  }
+
+  void messageReceived(OBDScanner s, TCPMessage m) {
+    if (m.header == MessageHeader_ScanWiFiNetworks ||
+        m.header == MessageHeader_KnownWiFiNetworks) {
+      setState(() {
+        networks = globalScanner.networks;
+      });
+      // Let's update after each ping
+    } else if (m.header == MessageHeader_Ping) {
+      requestNetworks();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Sort the list every time by RSSI
+    if (networks.length > 1) {
+      networks.sort((a, b) {
+        // RSSI is negative!
+        return -(a.rssi.compareTo(b.rssi));
+      });
+    }
+
     return CupertinoPageScaffold(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -34,25 +75,21 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
             ),
           ),
           Container(
-            height: 400,
-            child: ListView(
-              children: <Widget>[
-                ListWiFiItem("TEST", 5, true, true, true),
-                ListWiFiItem("TEST", 4, false, true, true),
-                ListWiFiItem("TEST", 3, false, true, false),
-                ListWiFiItem("TEST", 2, true, false, true),
-                ListWiFiItem("TEST", 1, false, false, true),
-                ListWiFiItem("TEST", 0, false, false, false),
-                ListGroupSpacer(height: 60),
-                ListWiFiItem("TEST", 6, true, true, false),
-                ListWiFiItem("TEST", -1, true, true, true),
-                ListWiFiItem("TEST", 3, true, true, true),
-                ListWiFiItem("TEST", 4, true, true, true),
-                ListWiFiItem("TEST", 5, true, true, true),
-                ListWiFiItem("TEST", 2, true, true, true),
-              ],
-            ),
-          ),
+              height: 400,
+              child: ListView.builder(
+                itemCount: globalScanner.networks.length,
+                itemBuilder: (BuildContext context, int index) {
+                  // TODO: correct RSSI
+                  return new ListWiFiItem(
+                      networks[index].ssid,
+                      WiFiNetwork.rssiToDots(networks[index].rssi),
+                      networks[index].isConnected,
+                      networks[index].isProtected,
+                      networks[index].isSaved,
+                      (s, b) {},
+                      (s, b) {});
+                },
+              )),
           Container(
             padding: EdgeInsets.all(24),
             child: Row(

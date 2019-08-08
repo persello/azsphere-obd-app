@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
     return CupertinoApp(
       title: 'Azure Sphere OBD Driving Stats',
       home: MainPage(title: 'Driving Stats'),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

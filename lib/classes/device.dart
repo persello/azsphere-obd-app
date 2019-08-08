@@ -3,16 +3,7 @@ import 'dart:core';
 
 import 'dart:io';
 
-import 'package:flutter/widgets.dart';
-import 'package:wifi/wifi.dart';
-
-const String MessageHeader_Ping = "PING";
-const String MessageHeader_ScanWiFiNetworks = "WISC";
-const String MessageHeader_KnownWiFiNetworks = "WISA";
-const String MessageHeader_OOBE = "OOBE";
-const String MessageHeader_OOBEDenied = "ODEN";
-const String MessageHeader_ButtonA = "BTNA";
-const String MessageHeader_ButtonB = "BTNB";
+import 'package:azsphere_obd_app/globals.dart';
 
 /// A TCP Message class.
 ///
@@ -29,20 +20,6 @@ class TCPMessage {
   }
   String header;
   String arguments;
-}
-
-/// A container class for a Wi-Fi network.
-///
-/// [isConnected], [isProtected], [isCurrentlyAvailable] and [isSaved]
-/// are set to false by default.
-class WiFiNetwork {
-  String ssid;
-  String password;
-  bool isConnected = false;
-  bool isCurrentlyAvailable = false;
-  bool isSaved = false;
-  bool isProtected = false;
-  int rssi = -100;
 }
 
 enum OBDScannerConnectionStatus {
@@ -106,12 +83,12 @@ class OBDScanner {
   /// Sets the [_socket] variable and starts the [_pingTimer]
   /// if the operation is successful.
   void connect() {
-    Socket.connect(ipAddress, 15500, timeout: Duration(milliseconds: 150))
+    Socket.connect(ipAddress, 15500, timeout: Duration(milliseconds: 50))
         .then((Socket s) {
       _socket = s;
       _socket.listen(_newTCPData, onError: _socketError);
 
-      _pingTimer = Timer.periodic(Duration(seconds: 3), (Timer t) => _ping());
+      _pingTimer = Timer.periodic(Duration(seconds: 10), (Timer t) => _ping());
     }).catchError((e) {
       print(
           "OBDScanner class - connect: Connection to $ipAddress failed. Error: ${e.toString()}.");
@@ -127,7 +104,7 @@ class OBDScanner {
   void _ping() {
     if (!_pingResponsePending) {
       TCPMessage message = TCPMessage.fromString(MessageHeader_Ping);
-      _sendMessage(message);
+      sendMessage(message);
       _pingResponsePending = true;
     } else {
       closeConnection();
@@ -135,8 +112,8 @@ class OBDScanner {
   }
 
   /// Sends a [TCPMessage] object after converting it to a string and adding a trailing \r\n
-  void _sendMessage(TCPMessage message) {
-    this._socket.write(message.header + message.arguments + "\r\n");
+  void sendMessage(TCPMessage message) {
+    this._socket.write(message.header + (message.arguments ?? "") + "\r\n");
   }
 
   /// Called when all the operations on the socket are complete and it should be closed.
@@ -159,6 +136,9 @@ class OBDScanner {
     if (_socket != null) {
       _socket.destroy();
     }
+
+    // In order to allow reconnection
+    _pingResponsePending = false;
     status = OBDScannerConnectionStatus.STATUS_DISCONNECTED;
     if (onConnectionChanged != null) onConnectionChanged(this, status);
   }
@@ -255,7 +235,7 @@ class OBDScanner {
 
           // And for each one
           for (String s in splitArguments) {
-            WiFiNetwork n;
+            WiFiNetwork n =  WiFiNetwork();
 
             // It is saved for sure
             n.isSaved = true;
@@ -292,7 +272,7 @@ class OBDScanner {
             }
 
             // If there were no duplicates, we simply add the network
-            if (indexWithSameSSID != -1) {
+            if (indexWithSameSSID == -1) {
               networks.add(n);
             }
             // Otherwise we update only the parameters given by the saved network list (isConnected, isSaved, isProtected)
@@ -319,7 +299,7 @@ class OBDScanner {
 
           // And for each one
           for (String s in splitArguments) {
-            WiFiNetwork n;
+            WiFiNetwork n = WiFiNetwork();
 
             // It is available for sure
             n.isCurrentlyAvailable = true;
@@ -352,7 +332,7 @@ class OBDScanner {
             }
 
             // If there were no duplicates, we simply add the network
-            if (indexWithSameSSID != -1) {
+            if (indexWithSameSSID == -1) {
               networks.add(n);
             }
             // Otherwise we update only the parameters given by the scanned network list (RSSI, isCurrentlyAvailable)

@@ -4,8 +4,38 @@ import 'package:azsphere_obd_app/tabs/map/viewsettings.dart';
 
 import 'classes/device.dart';
 
+const String MessageHeader_Ping = "PING";
+const String MessageHeader_ScanWiFiNetworks = "WISC";
+const String MessageHeader_KnownWiFiNetworks = "WISA";
+const String MessageHeader_OOBE = "OOBE";
+const String MessageHeader_OOBEDenied = "ODEN";
+const String MessageHeader_ButtonA = "BTNA";
+const String MessageHeader_ButtonB = "BTNB";
+
 Settings appSettings;
 OBDScanner globalScanner;
+
+/// A container class for a Wi-Fi network.
+///
+/// [isConnected], [isProtected], [isCurrentlyAvailable] and [isSaved]
+/// are set to false by default.
+class WiFiNetwork {
+  static int rssiToDots(int rssi) {
+    if(rssi < -90) return 0;
+    if(rssi < -80) return 1;
+    if(rssi < -70) return 2;
+    if(rssi < -67) return 3;
+    if(rssi < -45) return 4;
+    return 5;
+  }
+  String ssid;
+  String password;
+  bool isConnected = false;
+  bool isCurrentlyAvailable = false;
+  bool isSaved = false;
+  bool isProtected = false;
+  int rssi = -100;
+}
 
 /// The global app settings.
 class Settings {

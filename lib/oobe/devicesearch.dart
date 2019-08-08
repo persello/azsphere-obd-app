@@ -66,7 +66,6 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
         title: "Connected")
   };
 
-  OBDScanner foundScanner;
   SearchStatus currentSearchStatus;
   DevicePageControlsState devicePageControlsState;
   Timer scanTimer;
@@ -112,9 +111,9 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
   }
 
   void attachButtonPress() {
-    foundScanner.connect();
-    foundScanner.onConnectionChanged = scannerConnectionChanged;
-    foundScanner.onButtonAPressed = deviceButtonPressHandler;
+    globalScanner.connect();
+    globalScanner.onConnectionChanged = scannerConnectionChanged;
+    globalScanner.onButtonAPressed = deviceButtonPressHandler;
   }
 
   void deviceButtonPressHandler(OBDScanner s) {
@@ -130,7 +129,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     if (status != OBDScannerConnectionStatus.STATUS_DISCONNECTED &&
         status != OBDScannerConnectionStatus.STATUS_UNKNOWN) {
       print("${scanner.ipAddress} is available!");
-      foundScanner = scanner;
+      globalScanner = scanner;
       setState(() {
         currentSearchStatus = SearchStatus.DEVICE_BTN_WAIT;
         devicePageControlsState = states[currentSearchStatus];
@@ -147,7 +146,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
       OBDScanner scanner, OBDScannerConnectionStatus status) {
     if (status == OBDScannerConnectionStatus.STATUS_DISCONNECTED) {
       scanTimer = Timer.periodic(Duration(milliseconds: 50), scanForDevices);
-      foundScanner.onConnectionChanged = null;
+      globalScanner.onConnectionChanged = null;
       setState(() {
         currentSearchStatus = SearchStatus.SEARCHING;
         devicePageControlsState = states[currentSearchStatus];
@@ -156,8 +155,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
   }
 
   void continueButtonPressed() {
-    globalScanner = foundScanner;
-    foundScanner = null;
+    globalScanner.onConnectionChanged = null;
     if (scanTimer != null) scanTimer.cancel();
     Navigator.of(context, rootNavigator: true)
         .push(CupertinoPageRoute(
@@ -190,15 +188,9 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
   @override
   void dispose() {
     super.dispose();
-    if (scanTimer != null) {
-      scanTimer.cancel();
-    }
-    if (foundScanner != null) {
-      foundScanner.closeConnection();
-    }
-    if (globalScanner != null) {
-      globalScanner.closeConnection();
-    }
+    scanTimer?.cancel();
+    globalScanner?.closeConnection();
+    globalScanner?.onConnectionChanged = null;
   }
 
   @override
@@ -261,6 +253,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
                 CupertinoButton(
                     child: Text("Back"),
                     onPressed: () {
+                      scanTimer?.cancel();
                       Navigator.of(context, rootNavigator: true).pop();
                     }),
                 CupertinoButton(

@@ -396,8 +396,8 @@ class _ListSubMenuState extends State<ListSubMenu> {
 /// signal power, add and remove buttons, connected indicator
 /// and whether it is protected or not.
 class ListWiFiItem extends StatefulWidget {
-  ListWiFiItem(
-      this.ssid, this.signal, this.connected, this.protected, this.known);
+  ListWiFiItem(this.ssid, this.signal, this.connected, this.protected,
+      this.known, this.onAddButtonPressed, this.onRemoveButtonPressed);
 
   final String ssid;
   final int signal;
@@ -405,7 +405,8 @@ class ListWiFiItem extends StatefulWidget {
   final bool protected;
   final bool known;
 
-  //Function(String, bool);
+  Function(String, bool) onAddButtonPressed;
+  Function(String, bool) onRemoveButtonPressed;
 
   @override
   _ListWiFiItemState createState() => _ListWiFiItemState();
@@ -493,15 +494,15 @@ class _ListWiFiItemState extends State<ListWiFiItem> {
                     ],
                   ),
                 ),
-                Visibility(
-                  visible: widget.protected,
-                  child: Container(
-                    child: Icon(
-                      CupertinoIcons.padlock_closed,
-                      size: 20,
-                    ),
-                    padding: EdgeInsets.fromLTRB(0, 0, 8, 6),
+                Container(
+                  child: Icon(
+                    widget.protected?CupertinoIcons.padlock_closed: CupertinoIcons.padlock,
+                    size: 20,
+                    color: widget.protected
+                        ? CustomCupertinoColors.systemBlue
+                        : CustomCupertinoColors.systemGray2,
                   ),
+                  padding: EdgeInsets.fromLTRB(0, 0, 8, 6),
                 ),
                 Text(widget.ssid),
               ],
@@ -518,7 +519,10 @@ class _ListWiFiItemState extends State<ListWiFiItem> {
                         color: CupertinoColors.destructiveRed,
                         size: 20,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        widget.onRemoveButtonPressed(
+                            widget.ssid, widget.protected);
+                      },
                     ),
                   ),
                 ),
@@ -531,7 +535,10 @@ class _ListWiFiItemState extends State<ListWiFiItem> {
                         CupertinoIcons.add,
                         size: 20,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        widget.onAddButtonPressed(
+                            widget.ssid, widget.protected);
+                      },
                     ),
                   ),
                 ),
