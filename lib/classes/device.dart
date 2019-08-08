@@ -171,7 +171,7 @@ class OBDScanner {
     // Now we work directly on the entire buffer.
 
     // When it contains a \r\n sequence, we have a message for sure...
-    if (_receiveBuffer.toString().contains("\r\n")) {
+    while(_receiveBuffer.toString().contains("\r\n")) {
       print(
           "OBDScanner class - newTCPData: The receive buffer contains a message.");
       int indexOfReturn = _receiveBuffer.toString().indexOf("\r\n");

@@ -59,11 +59,6 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
             "Please press the \"A\" button on the device to confirm the connection.",
         spinnerVisible: false,
         title: "Confirm"),
-    SearchStatus.FINISHED: DevicePageControlsState(
-        buttonEnabled: true,
-        content: "We'll now proceed to adding some networks to the device.",
-        spinnerVisible: false,
-        title: "Connected")
   };
 
   SearchStatus currentSearchStatus;
@@ -117,10 +112,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
   }
 
   void deviceButtonPressHandler(OBDScanner s) {
-    setState(() {
-      currentSearchStatus = SearchStatus.FINISHED;
-      devicePageControlsState = states[currentSearchStatus];
-    });
+    goToNextPage();
   }
 
   void scannerConnectionChangedDuringScan(
@@ -154,7 +146,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     }
   }
 
-  void continueButtonPressed() {
+  void goToNextPage() {
     globalScanner.onConnectionChanged = null;
     if (scanTimer != null) scanTimer.cancel();
     Navigator.of(context, rootNavigator: true)
@@ -256,13 +248,6 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
                       scanTimer?.cancel();
                       Navigator.of(context, rootNavigator: true).pop();
                     }),
-                CupertinoButton(
-                  child: Text("Continue"),
-                  color: CustomCupertinoColors.systemBlue,
-                  onPressed: devicePageControlsState.buttonEnabled
-                      ? continueButtonPressed
-                      : null,
-                )
               ],
             ),
           )

@@ -1,3 +1,4 @@
+import 'package:azsphere_obd_app/globals.dart' as prefix0;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
@@ -15,15 +16,30 @@ class AddNetworksPage extends StatefulWidget {
 }
 
 class _AddNetworksPageState extends State<AddNetworksPage> {
-  List<WiFiNetwork> networks = List<WiFiNetwork>();
+  List<WiFiNetwork> _networks = List<WiFiNetwork>();
+  TextEditingController _passwordTextController = TextEditingController();
+  bool _overlayShown = false;
+  bool _passwordLongEnough = false;
 
   @override
   void initState() {
     super.initState();
-    //globalScanner.connect();
+    _passwordTextController.addListener(passwordListener);
     globalScanner.onConnectionChanged = connectionChanged;
     globalScanner.onMessageReceived = messageReceived;
     requestNetworks();
+  }
+
+  void passwordListener() {
+    if (_passwordTextController.text.length >= 8) {
+      setState(() {
+        _passwordLongEnough = true;
+      });
+    } else {
+      setState(() {
+        _passwordLongEnough = false;
+      });
+    }
   }
 
   void requestNetworks() {
@@ -35,7 +51,10 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
 
   void connectionChanged(OBDScanner s, OBDScannerConnectionStatus status) {
     if (status == OBDScannerConnectionStatus.STATUS_DISCONNECTED) {
-      s.connect();
+      if (_overlayShown) {
+        Navigator.of(context).pop();
+      }
+      Navigator.of(context, rootNavigator: true).pop();
     }
   }
 
@@ -43,7 +62,7 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
     if (m.header == MessageHeader_ScanWiFiNetworks ||
         m.header == MessageHeader_KnownWiFiNetworks) {
       setState(() {
-        networks = globalScanner.networks;
+        _networks = globalScanner.networks;
       });
       // Let's update after each ping
     } else if (m.header == MessageHeader_Ping) {
@@ -51,11 +70,87 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
     }
   }
 
+  void displayRemovalWarning(BuildContext context, String ssid) {
+    _overlayShown = true;
+    showCupertinoModalPopup(
+      context: context,
+      builder: (BuildContext context) => CupertinoActionSheet(
+        title: Text("Remove network"),
+        message: Text(
+            "Are you sure you want to remove $ssid from the list of the known networks? You may not be able to reconnect even after a reset if you don't have a PC with you."),
+        cancelButton: CupertinoActionSheetAction(
+          child: Text("Cancel"),
+          isDefaultAction: true,
+          onPressed: () {
+            Navigator.pop(context);
+            _overlayShown = false;
+          },
+        ),
+        actions: <Widget>[
+          CupertinoActionSheetAction(
+            child: Text("Remove $ssid"),
+            onPressed: () {
+              Navigator.pop(context);
+              _overlayShown = false;
+            },
+            isDestructiveAction: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void displayPasswordDialog(String ssid) {
+    _overlayShown = true;
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => new CupertinoAlertDialog(
+        title: new Text("Password required"),
+        content: new Container(
+          child: Column(
+            children: <Widget>[
+              Text("Insert $ssid's password.\r\nKeep in mind that the connection may drop because the device could change network. If it happens, connect the phone to the same Wi-Fi and we'll search again for it automatically."),
+              Container(
+                child: CupertinoTextField(
+                  placeholder: "Password",
+                  obscureText: true,
+                  controller: _passwordTextController,
+                ),
+                padding: EdgeInsets.fromLTRB(6, 20, 6, 0),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: new Text("Cancel"),
+            onPressed: () {
+              Navigator.of(context).pop();
+              _passwordTextController.clear();
+              _overlayShown = false;
+            },
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: new Text("Continue"),
+            onPressed: _passwordLongEnough
+                ? (() {
+                    Navigator.of(context).pop();
+                    _overlayShown = false;
+                  })
+                : null,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Sort the list every time by RSSI
-    if (networks.length > 1) {
-      networks.sort((a, b) {
+    if (_networks.length > 1) {
+      _networks.sort((a, b) {
         // RSSI is negative!
         return -(a.rssi.compareTo(b.rssi));
       });
@@ -75,21 +170,37 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
             ),
           ),
           Container(
-              height: 400,
+            child: Visibility(
+              visible: _networks.length == 0,
+              child: CupertinoActivityIndicator(
+                animating: true,
+              ),
+            ),
+          ),
+          Container(
+            height: 400,
+            child: Visibility(
+              visible: _networks.length > 0,
               child: ListView.builder(
                 itemCount: globalScanner.networks.length,
                 itemBuilder: (BuildContext context, int index) {
                   // TODO: correct RSSI
                   return new ListWiFiItem(
-                      networks[index].ssid,
-                      WiFiNetwork.rssiToDots(networks[index].rssi),
-                      networks[index].isConnected,
-                      networks[index].isProtected,
-                      networks[index].isSaved,
-                      (s, b) {},
-                      (s, b) {});
+                      _networks[index].ssid,
+                      WiFiNetwork.rssiToDots(_networks[index].rssi),
+                      _networks[index].isConnected,
+                      _networks[index].isProtected,
+                      _networks[index].isSaved, (ssid, protected) {
+                    if (protected) {
+                      displayPasswordDialog(ssid);
+                    }
+                  }, (ssid, protected) {
+                    displayRemovalWarning(context, ssid);
+                  });
                 },
-              )),
+              ),
+            ),
+          ),
           Container(
             padding: EdgeInsets.all(24),
             child: Row(
@@ -98,11 +209,13 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
                 CupertinoButton(
                     child: Text("Back"),
                     onPressed: () {
-                      Navigator.of(context, rootNavigator: true).pop();
                       globalScanner.closeConnection();
+                      globalScanner.onConnectionChanged = null;
+                      globalScanner.onMessageReceived = null;
+                      Navigator.of(context, rootNavigator: true).pop();
                     }),
                 CupertinoButton(
-                  child: Text("Save to device"),
+                  child: Text("Finish"),
                   color: CustomCupertinoColors.systemBlue,
                   onPressed: () {},
                 )
