@@ -59,17 +59,21 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
   }
 
   void messageReceived(OBDScanner s, TCPMessage m) {
-    if (m.header == MessageHeader_ScanWiFiNetworks ||
-        m.header == MessageHeader_KnownWiFiNetworks) {
+    // The last of the two messages
+    if (m.header == MessageHeader_KnownWiFiNetworks) {
       setState(() {
         _networks = globalScanner.networks;
       });
+      globalScanner.networks.clear();
+
       // Let's update after each ping
     } else if (m.header == MessageHeader_Ping) {
       requestNetworks();
     }
   }
 
+  // TODO: Investigate disconnection on removal
+  // TODO: Show spinner when waiting for change
   void displayRemovalWarning(BuildContext context, String ssid) {
     _overlayShown = true;
     showCupertinoModalPopup(
@@ -91,6 +95,9 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
             child: Text("Remove $ssid"),
             onPressed: () {
               Navigator.pop(context);
+              globalScanner.sendMessage(TCPMessage(
+                  header: MessageHeader_RemoveNetwork, arguments: ssid));
+              requestNetworks();
               _overlayShown = false;
             },
             isDestructiveAction: true,
@@ -109,7 +116,8 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
         content: new Container(
           child: Column(
             children: <Widget>[
-              Text("Insert $ssid's password.\r\nKeep in mind that the connection may drop because the device could change network. If it happens, connect the phone to the same Wi-Fi and we'll search again for it automatically."),
+              Text(
+                  "Insert $ssid's password.\r\nKeep in mind that the connection may drop because the device could change network. If it happens, connect the phone to the same Wi-Fi and we'll search again for it automatically."),
               Container(
                 child: CupertinoTextField(
                   placeholder: "Password",
@@ -137,6 +145,10 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
             onPressed: _passwordLongEnough
                 ? (() {
                     Navigator.of(context).pop();
+                    globalScanner.sendMessage(TCPMessage(
+                        header: MessageHeader_AddNetwork,
+                        arguments: "$ssid#${_passwordTextController.text}"));
+                    requestNetworks();
                     _overlayShown = false;
                   })
                 : null,
@@ -184,7 +196,6 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
               child: ListView.builder(
                 itemCount: globalScanner.networks.length,
                 itemBuilder: (BuildContext context, int index) {
-                  // TODO: correct RSSI
                   return new ListWiFiItem(
                       _networks[index].ssid,
                       WiFiNetwork.rssiToDots(_networks[index].rssi),
@@ -193,6 +204,11 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
                       _networks[index].isSaved, (ssid, protected) {
                     if (protected) {
                       displayPasswordDialog(ssid);
+                    } else {
+                      globalScanner.sendMessage(TCPMessage(
+                          header: MessageHeader_AddNetwork,
+                          arguments: "$ssid"));
+                      requestNetworks();
                     }
                   }, (ssid, protected) {
                     displayRemovalWarning(context, ssid);

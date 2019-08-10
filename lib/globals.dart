@@ -7,8 +7,9 @@ import 'classes/device.dart';
 const String MessageHeader_Ping = "PING";
 const String MessageHeader_ScanWiFiNetworks = "WISC";
 const String MessageHeader_KnownWiFiNetworks = "WISA";
+const String MessageHeader_AddNetwork = "WIAD";
+const String MessageHeader_RemoveNetwork = "WIRM";
 const String MessageHeader_OOBE = "OOBE";
-const String MessageHeader_OOBEDenied = "ODEN";
 const String MessageHeader_ButtonA = "BTNA";
 const String MessageHeader_ButtonB = "BTNB";
 

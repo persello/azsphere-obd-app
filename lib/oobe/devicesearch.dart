@@ -71,7 +71,11 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
   bool showNotice = false;
 
   void scanForDevices(Timer t) async {
-    ip = await Wifi.ip;
+    try {
+      ip = await Wifi.ip;
+    } catch (e) {
+      ip = "127.0.0.1";
+    }
 
     if (!ip.startsWith("192.168") &&
         currentSearchStatus != SearchStatus.WIFI_DISCONNECTED) {
