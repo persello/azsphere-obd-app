@@ -5,13 +5,29 @@ import 'dart:io';
 
 import 'package:azsphere_obd_app/globals.dart';
 
+const String MessageHeader_Ping = "PING";
+const String MessageHeader_ScanWiFiNetworks = "WISC";
+const String MessageHeader_KnownWiFiNetworks = "WISA";
+const String MessageHeader_AddNetwork = "WIAD";
+const String MessageHeader_RemoveNetwork = "WIRM";
+const String MessageHeader_OOBE = "OOBE";
+const String MessageHeader_ButtonA = "BTNA";
+const String MessageHeader_ButtonB = "BTNB";
+const String MessageHeader_OBDModuleConnected = "OBDC";
+const String MessageHeader_CarConnected = "CARC";
+const String MessageHeader_SDMounted = "SDMN";
+const String MessageHeader_SDSize = "SDSZ";
+const String MessageHeader_LastFileName = "LFNM";
+const String MessageHeader_GetFileSize = "GFSZ";
+const String MessageHeader_GetFileContent = "GFIL";
+
 /// A TCP Message class.
 ///
 /// It is simply a wrapper for two strings that can also set them
 /// from the parameters given in the constructor or from a string.
 /// A message is composed by 4 header characters and n argument
-/// characters (total < 1024). When using [TCPMessage.fromString()],
-/// be sure to not include the trailing \r\n.
+/// characters. When using [TCPMessage.fromString()], be sure to
+/// not include the trailing \r\n.
 class TCPMessage {
   TCPMessage({this.arguments, this.header});
   TCPMessage.fromString(String s) {

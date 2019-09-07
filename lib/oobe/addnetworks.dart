@@ -1,4 +1,3 @@
-import 'package:azsphere_obd_app/globals.dart' as prefix0;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
@@ -6,6 +5,7 @@ import 'package:azsphere_obd_app/iosstyles.dart';
 import 'package:azsphere_obd_app/classes/device.dart';
 import 'package:azsphere_obd_app/globals.dart';
 
+/// OOBE page in which you can view and add networks to the device
 class AddNetworksPage extends StatefulWidget {
   AddNetworksPage({Key key, this.title}) : super(key: key);
 
@@ -24,15 +24,25 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
   @override
   void initState() {
     super.initState();
+
+    // Controller for text input
     _passwordTextController.addListener(passwordListener);
+
+    // Device events
     globalScanner.onConnectionChanged = connectionChanged;
     globalScanner.onMessageReceived = messageReceived;
+
+    // First thing to do: request networks from the device
     requestNetworks();
   }
 
   void passwordListener() {
+
+    // Minimum passphrase length
     if (_passwordTextController.text.length >= 8) {
       setState(() {
+
+        // This variable enables/disables the continue button
         _passwordLongEnough = true;
       });
     } else {
@@ -42,6 +52,10 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
     }
   }
 
+  /// First requests the available networks, then the already known ones.
+  /// 
+  /// Note: Requesting a scan may put the device in an unresponsive state
+  /// for about 5 seconds.
   void requestNetworks() {
     globalScanner
         .sendMessage(TCPMessage(header: MessageHeader_ScanWiFiNetworks));
@@ -49,6 +63,7 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
         .sendMessage(TCPMessage(header: MessageHeader_KnownWiFiNetworks));
   }
 
+  /// On disconnection navigate to scan page.
   void connectionChanged(OBDScanner s, OBDScannerConnectionStatus status) {
     if (status == OBDScannerConnectionStatus.STATUS_DISCONNECTED) {
       if (_overlayShown) {
@@ -58,6 +73,9 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
     }
   }
 
+  /// When the last of the two messages is received we get the network list.
+  /// 
+  /// The network list is parsed internally by the object.
   void messageReceived(OBDScanner s, TCPMessage m) {
     // The last of the two messages
     if (m.header == MessageHeader_KnownWiFiNetworks) {
@@ -72,7 +90,7 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
     }
   }
 
-  // TODO: Investigate disconnection on removal
+  // TODO: Investigate disconnection on removal (ping expired?)
   // TODO: Show spinner when waiting for change
   void displayRemovalWarning(BuildContext context, String ssid) {
     _overlayShown = true;
@@ -107,6 +125,7 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
     );
   }
 
+  /// Shows a dialog requesting a password for the network named [ssid].
   void displayPasswordDialog(String ssid) {
     _overlayShown = true;
     showCupertinoDialog(
@@ -117,7 +136,7 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
           child: Column(
             children: <Widget>[
               Text(
-                  "Insert $ssid's password.\r\nKeep in mind that the connection may drop because the device could change network. If it happens, connect the phone to the same Wi-Fi and we'll search again for it automatically."),
+                  "Insert $ssid's password.\r\nKeep in mind that the connection may drop because the device could change network. If it happens, connect the phone to the same Wi-Fi and we'll search again for it automatically.\r\nThe device won't connect if the password is wrong."),
               Container(
                 child: CupertinoTextField(
                   placeholder: "Password",
@@ -145,6 +164,8 @@ class _AddNetworksPageState extends State<AddNetworksPage> {
             onPressed: _passwordLongEnough
                 ? (() {
                     Navigator.of(context).pop();
+
+                    // Send the new network parameters
                     globalScanner.sendMessage(TCPMessage(
                         header: MessageHeader_AddNetwork,
                         arguments: "$ssid#${_passwordTextController.text}"));

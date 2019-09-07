@@ -38,7 +38,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 ),
                 ListSubMenu(
                   text: "Connection",
-                  icon: CupertinoIcons.syncarrows,
+                  icon: CustomCupertinoIcons.syncarrows,
                   iconBackground: CustomCupertinoColors.systemBlue,
                   onPressed: () {},
                 ),
@@ -64,7 +64,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 ),
                 ListSubMenu(
                   text: "About",
-                  icon: CupertinoIcons.info_filled,
+                  icon: CustomCupertinoIcons.info_filled,
                   iconBackground: CustomCupertinoColors.systemTeal,
                   isLast: true,
                   onPressed: () {

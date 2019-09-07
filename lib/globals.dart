@@ -4,15 +4,6 @@ import 'package:azsphere_obd_app/tabs/map/viewsettings.dart';
 
 import 'classes/device.dart';
 
-const String MessageHeader_Ping = "PING";
-const String MessageHeader_ScanWiFiNetworks = "WISC";
-const String MessageHeader_KnownWiFiNetworks = "WISA";
-const String MessageHeader_AddNetwork = "WIAD";
-const String MessageHeader_RemoveNetwork = "WIRM";
-const String MessageHeader_OOBE = "OOBE";
-const String MessageHeader_ButtonA = "BTNA";
-const String MessageHeader_ButtonB = "BTNB";
-
 Settings appSettings;
 OBDScanner globalScanner;
 

@@ -26,6 +26,31 @@ class CustomCupertinoColors {
   static const Color systemYellow = Color.fromARGB(255, 255, 204, 0);
 }
 
+/// Some icons included in the cupertino icon font but not defined.
+class CustomCupertinoIcons {
+  /// The icon font used for Cupertino icons.
+  static const String iconFont = 'CupertinoIcons';
+
+  /// The dependent package providing the Cupertino icons font.
+  static const String iconFontPackage = 'cupertino_icons';
+
+  static const IconData navigation_circled = IconData(0xf46d, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData navigation_circled_solid = IconData(0xf46e, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData pie_chart = IconData(0xf483, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData pie_chart_solid = IconData(0xf484, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData download = IconData(0xf407, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData download_solid = IconData(0xf408, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData info_filled = IconData(0xf44d, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData home_solid = IconData(0xf448, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData syncarrows = IconData(0xf459, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData remove_item = IconData(0xf463, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData remove_item_solid = IconData(0xf464, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData padlock_closed = IconData(0xf457, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData padlock_closed_solid = IconData(0xf458, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData dashboard = IconData(0xf4AF, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData dashboard_solid = IconData(0xf4B0, fontFamily: iconFont, fontPackage: iconFontPackage);
+}
+
 /// Some custom text styles for general usage.
 class CustomCupertinoTextStyles {
   /// A text style for grouped lists' titles.
@@ -496,7 +521,7 @@ class _ListWiFiItemState extends State<ListWiFiItem> {
                 ),
                 Container(
                   child: Icon(
-                    widget.protected?CupertinoIcons.padlock_closed: CupertinoIcons.padlock,
+                    widget.protected?CustomCupertinoIcons.padlock_closed: CupertinoIcons.padlock,
                     size: 20,
                     color: widget.protected
                         ? CustomCupertinoColors.systemBlue
@@ -515,7 +540,7 @@ class _ListWiFiItemState extends State<ListWiFiItem> {
                     child: CupertinoButton(
                       padding: EdgeInsets.symmetric(vertical: 6),
                       child: Icon(
-                        CupertinoIcons.remove_item_solid,
+                        CustomCupertinoIcons.remove_item_solid,
                         color: CupertinoColors.destructiveRed,
                         size: 20,
                       ),
