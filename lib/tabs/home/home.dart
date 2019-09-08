@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:azsphere_obd_app/classes/vehicle.dart';
 import 'package:azsphere_obd_app/tabs/settings/carproperties.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,20 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
+  void getCarFromMemory() async {
+    Vehicle x = await Vehicle.restore();
+    setState(() {
+      car = x;
+    });
+  }
+
+  @override
+  void initState() {
+    // Update car object
+    getCarFromMemory();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -271,12 +286,12 @@ class _HomeTabState extends State<HomeTab> {
                               color: CustomCupertinoColors.systemGray6,
                               height: 80,
                               width: 80,
-                              child: (car.image == null
+                              child: (car.imagePath == null
                                   ? Icon(CupertinoIcons.photo_camera_solid,
                                       size: 40,
                                       color: CustomCupertinoColors.systemGray4)
                                   : FittedBox(
-                                      child: Image.file(car.image),
+                                      child: Image.file(File(car.imagePath)),
                                       fit: BoxFit.cover,
                                     )),
                             ),

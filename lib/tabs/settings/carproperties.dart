@@ -1,4 +1,5 @@
 import 'package:azsphere_obd_app/classes/fuel.dart';
+import 'package:azsphere_obd_app/classes/vehicle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -46,10 +47,10 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
 
               // Open gallery
               var image =
-                  await ImagePicker.pickImage(source: ImageSource.gallery);
+                  await ImagePicker.pickImage(source: ImageSource.gallery, maxWidth: 1000);
 
               setState(() {
-                car.image = image;
+                car.imagePath = image.path;
               });
             },
           ),
@@ -63,10 +64,10 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
 
               // Open camera
               var image =
-                  await ImagePicker.pickImage(source: ImageSource.camera);
+                  await ImagePicker.pickImage(source: ImageSource.camera, maxWidth: 1000);
 
               setState(() {
-                car.image = image;
+                car.imagePath = image.path;
               });
             },
           ),
@@ -81,7 +82,7 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
 
               // Remove
               setState(() {
-                car.image = null;
+                car.imagePath = null;
               });
             },
           )
@@ -130,6 +131,14 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
     if (car.model != null) _modelTextField.text = car.model;
 
     if (car.vin != null) _vinTextField.text = car.vin;
+  }
+
+
+  // Save changes to non volatile memory on exit
+  @override
+  void dispose() {
+    car.save();
+    super.dispose();
   }
 
   @override

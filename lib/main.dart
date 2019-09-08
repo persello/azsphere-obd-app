@@ -1,3 +1,4 @@
+import 'package:azsphere_obd_app/classes/vehicle.dart';
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -23,11 +24,11 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    // Application setup
+    // Application setup, restore saved data
     appSettings = StoredSettings();
 
     return CupertinoApp(
-      title: 'Azure Sphere OBD Driving Stats',
+      title: 'OBD Driving Stats',
       home: MainPage(title: 'Driving Stats'),
       debugShowCheckedModeBanner: false,
     );
