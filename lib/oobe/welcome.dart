@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-import 'package:azsphere_obd_app/iosstyles.dart';
+import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/tabs/settings/info.dart';
 import 'package:azsphere_obd_app/oobe/connection.dart';
 import 'package:carousel_slider/carousel_slider.dart';

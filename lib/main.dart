@@ -1,8 +1,10 @@
-import 'package:azsphere_obd_app/iosstyles.dart';
+import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'package:azsphere_obd_app/tabs/home/home.dart';
 import 'package:azsphere_obd_app/tabs/map/map.dart';
 import 'package:azsphere_obd_app/tabs/settings/settings.dart';
+
 import 'package:azsphere_obd_app/globals.dart';
 import 'package:flutter/services.dart';
 
@@ -81,14 +83,7 @@ class _MainPageState extends State<MainPage> {
         switch (index) {
           case 0:
             return CupertinoTabView(builder: (context) {
-              return CupertinoPageScaffold(
-                navigationBar: CupertinoNavigationBar(
-                  middle: Text("Home"),
-                ),
-                child: Center(
-                  child: Text("1"),
-                ),
-              );
+              return HomeTab(title: "Home");
             });
           case 1:
             return CupertinoTabView(builder: (context) {
