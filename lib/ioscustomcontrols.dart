@@ -84,6 +84,10 @@ class CustomCupertinoTextStyles {
   /// A black text style.
   static const TextStyle blackStyle =
       TextStyle(color: CustomCupertinoColors.black);
+      
+  /// A secondary text style.
+  static const TextStyle secondaryStyle =
+      TextStyle(color: CustomCupertinoColors.systemGray);
 
   /// A black text style.
   static const TextStyle lightBigTitle =

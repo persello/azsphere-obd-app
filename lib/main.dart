@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Application setup
-    appSettings = Settings();
+    appSettings = StoredSettings();
 
     return CupertinoApp(
       title: 'Azure Sphere OBD Driving Stats',

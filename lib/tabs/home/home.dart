@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:azsphere_obd_app/tabs/settings/carproperties.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/customcontrols.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import '../../globals.dart';
 
 /// General settings page
 class HomeTab extends StatefulWidget {
@@ -244,10 +247,63 @@ class _HomeTabState extends State<HomeTab> {
 
                 // Car data
                 ListGroupSpacer(title: "Your car"),
-                GenericListItem(
-                  child: Row(
-                    children: <Widget>[],
-                  ),
+                ListButton(
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).push(
+                      CupertinoPageRoute(
+                        builder: (context) => SettingsCarProperties(
+                          title: "Vehicle information",
+                          previousTitle: widget.title,
+                        ),
+                      ),
+                    );
+                  },
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Padding(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              color: CustomCupertinoColors.systemGray6,
+                              height: 80,
+                              width: 80,
+                              child: Icon(
+                                CupertinoIcons.photo_camera_solid,
+                                size: 40,
+                                color: CustomCupertinoColors.systemGray4,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              car.brand ?? "Unknown brand",
+                              style: CustomCupertinoTextStyles.blackStyle,
+                            ),
+                            Text(
+                              car.model ?? "Unknown model",
+                              style: CustomCupertinoTextStyles.blackStyle,
+                            ),
+                            Text(
+                              car.vin ?? "Unknown VIN",
+                              style: CustomCupertinoTextStyles.secondaryStyle,
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+
+                    // Chevron
+                    Icon(
+                      CupertinoIcons.right_chevron,
+                      color: CustomCupertinoColors.systemGray4,
+                    )
+                  ],
                 )
               ],
             ),

@@ -3,9 +3,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:azsphere_obd_app/tabs/map/viewsettings.dart';
 
 import 'classes/device.dart';
+import 'classes/vehicle.dart';
 
-Settings appSettings;
+StoredSettings appSettings;
 OBDScanner globalScanner;
+Vehicle car = new Vehicle();
 
 /// A container class for a Wi-Fi network.
 ///
@@ -29,11 +31,16 @@ class WiFiNetwork {
   int rssi = -100;
 }
 
+/// Class for managing locally stored vehicle data.
+class StoredVehicleData {
+
+}
+
 /// The global app settings.
-class Settings {
+class StoredSettings {
 
   // On creation we load everything into the object.
-  Settings() {
+  StoredSettings() {
     restore();
   }
 
