@@ -23,6 +23,7 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
   TextEditingController _brandTextField;
   TextEditingController _modelTextField;
   TextEditingController _vinTextField;
+  FixedExtentScrollController _pickerScrollController;
 
   void showImagePicker() async {
     await showCupertinoModalPopup(
@@ -46,8 +47,8 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
               Navigator.of(context, rootNavigator: true).pop(context);
 
               // Open gallery
-              var image =
-                  await ImagePicker.pickImage(source: ImageSource.gallery, maxWidth: 1000);
+              var image = await ImagePicker.pickImage(
+                  source: ImageSource.gallery, maxWidth: 1000);
 
               setState(() {
                 car.imagePath = image.path;
@@ -63,8 +64,8 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
               Navigator.of(context, rootNavigator: true).pop(context);
 
               // Open camera
-              var image =
-                  await ImagePicker.pickImage(source: ImageSource.camera, maxWidth: 1000);
+              var image = await ImagePicker.pickImage(
+                  source: ImageSource.camera, maxWidth: 1000);
 
               setState(() {
                 car.imagePath = image.path;
@@ -99,6 +100,10 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
       items.add(new Text(f.name));
     }
 
+    // Set to current
+    _pickerScrollController = new FixedExtentScrollController(
+        initialItem: CommonFuels.list.indexOf(car.fuel));
+
     showCupertinoModalPopup(
       context: context,
       builder: (BuildContext context) => Container(
@@ -108,6 +113,7 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
           itemExtent: 30,
           useMagnifier: true,
           magnification: 1.2,
+          scrollController: _pickerScrollController,
           onSelectedItemChanged: (int i) {
             setState(() {
               car.fuel = CommonFuels.list[i];
@@ -132,7 +138,6 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
 
     if (car.vin != null) _vinTextField.text = car.vin;
   }
-
 
   // Save changes to non volatile memory on exit
   @override
