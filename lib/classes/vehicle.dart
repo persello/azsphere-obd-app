@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'fuel.dart';
 
 class Vehicle {
@@ -6,7 +8,7 @@ class Vehicle {
     fuel = CommonFuels.undefined;
   }
 
-  // TODO: Image
+  File image;
 
   String brand;
   String model;

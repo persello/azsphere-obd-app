@@ -261,6 +261,7 @@ class _HomeTabState extends State<HomeTab> {
                   children: <Widget>[
                     Row(
                       children: <Widget>[
+                        // Image
                         Padding(
                           padding:
                               EdgeInsets.symmetric(horizontal: 8, vertical: 12),
@@ -270,14 +271,19 @@ class _HomeTabState extends State<HomeTab> {
                               color: CustomCupertinoColors.systemGray6,
                               height: 80,
                               width: 80,
-                              child: Icon(
-                                CupertinoIcons.photo_camera_solid,
-                                size: 40,
-                                color: CustomCupertinoColors.systemGray4,
-                              ),
+                              child: (car.image == null
+                                  ? Icon(CupertinoIcons.photo_camera_solid,
+                                      size: 40,
+                                      color: CustomCupertinoColors.systemGray4)
+                                  : FittedBox(
+                                      child: Image.file(car.image),
+                                      fit: BoxFit.cover,
+                                    )),
                             ),
                           ),
                         ),
+
+                        // Text fields
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[

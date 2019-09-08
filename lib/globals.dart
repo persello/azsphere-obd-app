@@ -31,11 +31,6 @@ class WiFiNetwork {
   int rssi = -100;
 }
 
-/// Class for managing locally stored vehicle data.
-class StoredVehicleData {
-
-}
-
 /// The global app settings.
 class StoredSettings {
 

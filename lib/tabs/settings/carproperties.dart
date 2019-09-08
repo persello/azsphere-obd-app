@@ -1,23 +1,18 @@
 import 'package:azsphere_obd_app/classes/fuel.dart';
-import 'package:azsphere_obd_app/classes/vehicle.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
-
-import 'package:package_info/package_info.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/globals.dart';
 
 /// App info page
 class SettingsCarProperties extends StatefulWidget {
-  SettingsCarProperties(
-      {Key key, this.title, this.previousTitle, this.existingVehicleProperties})
+  SettingsCarProperties({Key key, this.title, this.previousTitle})
       : super(key: key);
 
   final String title;
   final String previousTitle;
-  final Vehicle existingVehicleProperties;
 
   @override
   _SettingsCarPropertiesState createState() => _SettingsCarPropertiesState();
@@ -28,6 +23,74 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
   TextEditingController _modelTextField;
   TextEditingController _vinTextField;
 
+  void showImagePicker() async {
+    await showCupertinoModalPopup(
+      context: context,
+      builder: (BuildContext context) => CupertinoActionSheet(
+        title: Text("Add or change vehicle picture"),
+        message: Text("Please choose how to proceed."),
+        cancelButton: CupertinoActionSheetAction(
+          child: Text("Cancel"),
+          isDefaultAction: true,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        actions: <Widget>[
+          // Gallery
+          CupertinoActionSheetAction(
+            child: Text("Choose a picture from your gallery"),
+            onPressed: () async {
+              // Close sheet
+              Navigator.of(context, rootNavigator: true).pop(context);
+
+              // Open gallery
+              var image =
+                  await ImagePicker.pickImage(source: ImageSource.gallery);
+
+              setState(() {
+                car.image = image;
+              });
+            },
+          ),
+
+          // Camera
+          CupertinoActionSheetAction(
+            child: Text("Take a new picture"),
+            onPressed: () async {
+              // Close sheet
+              Navigator.of(context, rootNavigator: true).pop(context);
+
+              // Open camera
+              var image =
+                  await ImagePicker.pickImage(source: ImageSource.camera);
+
+              setState(() {
+                car.image = image;
+              });
+            },
+          ),
+
+          // Remove
+          CupertinoActionSheetAction(
+            child: Text("Remove"),
+            isDestructiveAction: true,
+            onPressed: () {
+              // Close sheet
+              Navigator.of(context, rootNavigator: true).pop(context);
+
+              // Remove
+              setState(() {
+                car.image = null;
+              });
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  /// Shows the fuel picker and changes the car's [Fuel] property accordingly.
   void showFuelPicker({BuildContext context}) {
     // Gather the list of common fuels
     List<Widget> items = new List<Widget>();
@@ -137,7 +200,6 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
 
                 // VIN
                 GenericListItem(
-                  isLast: true,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -162,6 +224,22 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
                   ),
                 ),
 
+                // Image
+                ListButton(
+                  isLast: true,
+                  onPressed: () {
+                    showImagePicker();
+                  },
+                  children: <Widget>[
+                    Text("Change vehicle picture"),
+                    Icon(
+                      CupertinoIcons.right_chevron,
+                      color: CustomCupertinoColors.systemGray4,
+                    )
+                  ],
+                  padding: EdgeInsets.only(left: 16),
+                ),
+
                 ListGroupSpacer(title: "Fuel details"),
 
                 // Fuel
@@ -183,7 +261,7 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
                         Padding(
                           padding: EdgeInsets.fromLTRB(6, 6, 0, 10),
                           child: Text(
-                            car.fuel.name,
+                            car.fuel?.name,
                             style: CustomCupertinoTextStyles.blackStyle,
                           ),
                         ),
@@ -193,7 +271,7 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
                 ),
 
                 // Display only if fuel selected
-                if (car.fuel.name != 'Not selected')
+                if (car.fuel?.name != 'Not selected')
                   GenericListItem(
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 6),
