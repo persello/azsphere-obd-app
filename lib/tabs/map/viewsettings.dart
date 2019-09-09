@@ -44,7 +44,7 @@ class _MapViewSettingsState extends State<MapViewSettings> {
             title: "Show my location",
             onChanged: (bool value) {
               widget.data.showMyLocation = value;
-              appSettings.save();
+              appSettings.saveMapSettings();
             },
             initialValue: widget.data.showMyLocation,
           ),
@@ -53,7 +53,7 @@ class _MapViewSettingsState extends State<MapViewSettings> {
               onValueChanged: (int selectedMapType) {
                 setState(() {
                   widget.data.mapType = MapType.values[selectedMapType];
-                  appSettings.save();
+                  appSettings.saveMapSettings();
                 });
               },
               children: widget.mapTypeChoices,
