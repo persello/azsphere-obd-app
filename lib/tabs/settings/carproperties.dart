@@ -1,11 +1,9 @@
 import 'package:azsphere_obd_app/classes/fuel.dart';
-import 'package:azsphere_obd_app/classes/vehicle.dart';
+import 'package:azsphere_obd_app/globals.dart';
+import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
-import 'package:azsphere_obd_app/ioscustomcontrols.dart';
-import 'package:azsphere_obd_app/globals.dart';
 
 /// App info page
 class SettingsCarProperties extends StatefulWidget {

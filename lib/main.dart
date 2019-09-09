@@ -1,4 +1,3 @@
-import 'package:azsphere_obd_app/classes/vehicle.dart';
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -6,8 +5,9 @@ import 'package:azsphere_obd_app/tabs/home/home.dart';
 import 'package:azsphere_obd_app/tabs/map/map.dart';
 import 'package:azsphere_obd_app/tabs/settings/settings.dart';
 
-import 'package:azsphere_obd_app/globals.dart';
 import 'package:flutter/services.dart';
+
+import 'globals.dart';
 
 void main() {
   // Limit to vertical orientation until layout is responsive.
@@ -25,7 +25,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Application setup, restore saved data
-    appSettings = StoredSettings();
+    appSettings = new StoredSettings();
+    appSettings.restoreMapSettings();
 
     return CupertinoApp(
       title: 'OBD Driving Stats',

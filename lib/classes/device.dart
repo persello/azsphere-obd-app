@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:core';
-
 import 'dart:io';
+import 'dart:math' as Math;
 
 import 'package:azsphere_obd_app/globals.dart';
 
@@ -86,6 +86,12 @@ class OBDScanner {
   /// The raw TCP receive buffer. Simply an unprocessed result of a stream of characters.
   StringBuffer _receiveBuffer = new StringBuffer();
 
+  /// Whether or not the SD card is mounted (not only inserted, but mounted).
+  bool sdCardMounted = false;
+
+  /// The size of the SD card in kB.
+  int sdCardSize = 0;
+
   // Constructor
   OBDScanner(
       {this.ipAddress,
@@ -94,12 +100,51 @@ class OBDScanner {
       this.onButtonAPressed,
       this.onButtonBPressed});
 
+  /// Utility function that converts a size from [bytes]
+  /// to an appropriate value.
+  static String byteSizeToString(int bytes) {
+    bytes = bytes ?? 0;
+
+    int order;
+    if (bytes > 0) {
+      order = (Math.log(bytes) / Math.log(1024)).floor();
+    } else {
+      order = 0;
+    }
+
+    String suffix;
+    switch (order) {
+      case 1:
+        suffix = 'kB';
+        break;
+      case 2:
+        suffix = 'MB';
+        break;
+      case 3:
+        suffix = 'GB';
+        break;
+      case 4:
+        suffix = 'TB';
+        break;
+      case 0:
+      default:
+        if (bytes == 1)
+          suffix = 'byte';
+        else
+          suffix = 'bytes';
+        break;
+    }
+
+    double value = bytes / Math.pow(1024, order);
+    return "${value.toStringAsFixed(2)} $suffix";
+  }
+
   /// Tries to connect to the object's ip address.
   ///
   /// Sets the [_socket] variable and starts the [_pingTimer]
   /// if the operation is successful.
   void connect() {
-    Socket.connect(ipAddress, 15500, timeout: Duration(milliseconds: 50))
+    Socket.connect(ipAddress, 15500, timeout: Duration(milliseconds: 150))
         .then((Socket s) {
       _socket = s;
       _socket.listen(_newTCPData, onError: _socketError);
@@ -166,7 +211,10 @@ class OBDScanner {
   /// [onMessageReceived] callback function and passes the latest message
   /// as an argument.
   void _newTCPData(data) {
-    // First we need to convert the array of characters into a string object
+    // First, we update the ping time because our device is connected
+    _pingResponsePending = false;
+
+    // Then we need to convert the array of characters into a string object
     String received = new String.fromCharCodes(data);
 
     // Then, if the value corresponds to an initialization message, we change the connection status if not already done.
@@ -187,7 +235,7 @@ class OBDScanner {
     // Now we work directly on the entire buffer.
 
     // When it contains a \r\n sequence, we have a message for sure...
-    while(_receiveBuffer.toString().contains("\r\n")) {
+    while (_receiveBuffer.toString().contains("\r\n")) {
       print(
           "OBDScanner class - newTCPData: The receive buffer contains a message.");
       int indexOfReturn = _receiveBuffer.toString().indexOf("\r\n");
@@ -219,8 +267,12 @@ class OBDScanner {
 
     switch (message.header) {
       case MessageHeader_Ping:
-        _pingResponsePending = false;
+        // Not only here anymore: every piece of data serves as ping, so it works even during file transfer
+
         lastSuccessfulPing = DateTime.now();
+
+        // Changing status from disconnected to connected is only allowed with a PING response,
+        // otherwise other devices might be recognised as scanners.
         if (status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
           status = OBDScannerConnectionStatus.STATUS_CONNECTED;
           onConnectionChanged(this, status);
@@ -251,7 +303,7 @@ class OBDScanner {
 
           // And for each one
           for (String s in splitArguments) {
-            WiFiNetwork n =  WiFiNetwork();
+            WiFiNetwork n = WiFiNetwork();
 
             // It is saved for sure
             n.isSaved = true;
@@ -360,6 +412,14 @@ class OBDScanner {
             }
           }
         }
+        break;
+      case MessageHeader_SDMounted:
+        // SDMN0 = unmounted, SDMN1 = mounted.
+        sdCardMounted = int.parse(message.arguments) > 0;
+        break;
+      case MessageHeader_SDSize:
+        // SDSZXXXXXXXXXXXX X = size in kB
+        sdCardSize = int.parse(message.arguments);
         break;
       default:
         ret = false;
