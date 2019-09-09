@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:azsphere_obd_app/iosstyles.dart';
+import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/globals.dart';
 import 'package:azsphere_obd_app/classes/device.dart';
 import 'package:azsphere_obd_app/oobe/addnetworks.dart';
@@ -125,6 +125,11 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     if (status != OBDScannerConnectionStatus.STATUS_DISCONNECTED &&
         status != OBDScannerConnectionStatus.STATUS_UNKNOWN) {
       print("${scanner.ipAddress} is available!");
+
+      // Save the IP address
+      StoredSettings.saveIp(scanner.ipAddress);
+
+      // Make it global and wait for btn. press
       globalScanner = scanner;
       setState(() {
         currentSearchStatus = SearchStatus.DEVICE_BTN_WAIT;
@@ -132,6 +137,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
       });
       scanTimer.cancel();
       scanner.closeConnection();
+
       // Socket actions on the board are delayed
       sleep(Duration(milliseconds: 1100));
       attachButtonPress();

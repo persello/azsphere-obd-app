@@ -1,10 +1,13 @@
-import 'package:azsphere_obd_app/iosstyles.dart';
+import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'package:azsphere_obd_app/tabs/home/home.dart';
 import 'package:azsphere_obd_app/tabs/map/map.dart';
 import 'package:azsphere_obd_app/tabs/settings/settings.dart';
-import 'package:azsphere_obd_app/globals.dart';
+
 import 'package:flutter/services.dart';
+
+import 'globals.dart';
 
 void main() {
   // Limit to vertical orientation until layout is responsive.
@@ -21,11 +24,12 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    // Application setup
-    appSettings = Settings();
+    // Application setup, restore saved data
+    appSettings = new StoredSettings();
+    appSettings.restoreMapSettings();
 
     return CupertinoApp(
-      title: 'Azure Sphere OBD Driving Stats',
+      title: 'OBD Driving Stats',
       home: MainPage(title: 'Driving Stats'),
       debugShowCheckedModeBanner: false,
     );
@@ -81,14 +85,7 @@ class _MainPageState extends State<MainPage> {
         switch (index) {
           case 0:
             return CupertinoTabView(builder: (context) {
-              return CupertinoPageScaffold(
-                navigationBar: CupertinoNavigationBar(
-                  middle: Text("Home"),
-                ),
-                child: Center(
-                  child: Text("1"),
-                ),
-              );
+              return HomeTab(title: "Home");
             });
           case 1:
             return CupertinoTabView(builder: (context) {

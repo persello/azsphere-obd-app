@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:carousel_slider/carousel_slider.dart';
 
-import 'package:azsphere_obd_app/iosstyles.dart';
+import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/oobe/devicesearch.dart';
 
 /// Connection page (second page), asks to enable hotspot.

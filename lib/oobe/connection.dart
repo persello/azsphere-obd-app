@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-import 'package:azsphere_obd_app/iosstyles.dart';
+import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/oobe/existingnetworkguide.dart';
 import 'package:azsphere_obd_app/oobe/hotspotguide.dart';
 

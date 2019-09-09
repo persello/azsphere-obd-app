@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:azsphere_obd_app/iosstyles.dart';
+import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/classes/device.dart';
 import 'package:azsphere_obd_app/globals.dart';
 

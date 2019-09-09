@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 
 /// Some custom-defined colors based on [Apple's guidelines](https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/color/).
@@ -34,21 +32,36 @@ class CustomCupertinoIcons {
   /// The dependent package providing the Cupertino icons font.
   static const String iconFontPackage = 'cupertino_icons';
 
-  static const IconData navigation_circled = IconData(0xf46d, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData navigation_circled_solid = IconData(0xf46e, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData pie_chart = IconData(0xf483, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData pie_chart_solid = IconData(0xf484, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData download = IconData(0xf407, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData download_solid = IconData(0xf408, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData info_filled = IconData(0xf44d, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData home_solid = IconData(0xf448, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData syncarrows = IconData(0xf459, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData remove_item = IconData(0xf463, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData remove_item_solid = IconData(0xf464, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData padlock_closed = IconData(0xf457, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData padlock_closed_solid = IconData(0xf458, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData dashboard = IconData(0xf4AF, fontFamily: iconFont, fontPackage: iconFontPackage);
-  static const IconData dashboard_solid = IconData(0xf4B0, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData navigation_circled =
+      IconData(0xf46d, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData navigation_circled_solid =
+      IconData(0xf46e, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData pie_chart =
+      IconData(0xf483, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData pie_chart_solid =
+      IconData(0xf484, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData download =
+      IconData(0xf407, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData download_solid =
+      IconData(0xf408, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData info_filled =
+      IconData(0xf44d, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData home_solid =
+      IconData(0xf448, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData syncarrows =
+      IconData(0xf459, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData remove_item =
+      IconData(0xf463, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData remove_item_solid =
+      IconData(0xf464, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData padlock_closed =
+      IconData(0xf457, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData padlock_closed_solid =
+      IconData(0xf458, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData dashboard =
+      IconData(0xf4AF, fontFamily: iconFont, fontPackage: iconFontPackage);
+  static const IconData dashboard_solid =
+      IconData(0xf4B0, fontFamily: iconFont, fontPackage: iconFontPackage);
 }
 
 /// Some custom text styles for general usage.
@@ -69,6 +82,10 @@ class CustomCupertinoTextStyles {
   /// A black text style.
   static const TextStyle blackStyle =
       TextStyle(color: CustomCupertinoColors.black);
+      
+  /// A secondary text style.
+  static const TextStyle secondaryStyle =
+      TextStyle(color: CustomCupertinoColors.systemGray);
 
   /// A black text style.
   static const TextStyle lightBigTitle =
@@ -266,10 +283,15 @@ class GenericListItem extends StatelessWidget {
 /// This generic list item is interactive and acts as a [CupertinoButton].
 /// It is the base of the [ListSubMenu].
 class ListButton extends StatefulWidget {
-  ListButton({@required this.children, this.onPressed, this.isLast = false});
+  ListButton(
+      {@required this.children,
+      this.onPressed,
+      this.isLast = false,
+      this.padding = const EdgeInsets.fromLTRB(12, 0, 4, 0)});
   final List<Widget> children;
   final bool isLast;
   final VoidCallback onPressed;
+  final EdgeInsetsGeometry padding;
 
   @override
   _ListButtonState createState() => _ListButtonState();
@@ -295,7 +317,7 @@ class _ListButtonState extends State<ListButton> {
           children: <Widget>[
             // The button contains every children
             CupertinoButton(
-              padding: EdgeInsets.fromLTRB(12, 0, 4, 0),
+              padding: widget.padding,
               onPressed: widget.onPressed,
               // In a row for alignment
               child: Row(
@@ -521,7 +543,9 @@ class _ListWiFiItemState extends State<ListWiFiItem> {
                 ),
                 Container(
                   child: Icon(
-                    widget.protected?CustomCupertinoIcons.padlock_closed: CupertinoIcons.padlock,
+                    widget.protected
+                        ? CustomCupertinoIcons.padlock_closed
+                        : CupertinoIcons.padlock,
                     size: 20,
                     color: widget.protected
                         ? CustomCupertinoColors.systemBlue

@@ -1,10 +1,8 @@
+import 'package:azsphere_obd_app/tabs/settings/carproperties.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-import 'package:azsphere_obd_app/iosstyles.dart';
-import 'package:azsphere_obd_app/globals.dart';
+import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/tabs/settings/info.dart';
 import 'package:azsphere_obd_app/oobe/welcome.dart';
 
@@ -57,10 +55,12 @@ class _SettingsTabState extends State<SettingsTab> {
                 ),
                 ListGroupSpacer(height: 40),
                 ListSubMenu(
-                  text: "Vehicle info",
+                  text: "Vehicle information",
                   icon: CupertinoIcons.car,
                   iconBackground: CustomCupertinoColors.systemGreen,
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(builder: (context) => SettingsCarProperties(title: "Vehicle information", previousTitle: "Settings")));
+                  },
                 ),
                 ListSubMenu(
                   text: "About",
