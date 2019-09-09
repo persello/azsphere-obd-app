@@ -38,10 +38,10 @@ class Vehicle {
 
     Vehicle returnCar = new Vehicle();
 
-    // Car
-    returnCar.brand = sp.getString('car_brand') ?? '';
-    returnCar.model = sp.getString('car_model') ?? '';
-    returnCar.vin = sp.getString('car_vin') ?? '';
+    // Car (leave null if null)
+    returnCar.brand = sp.getString('car_brand');
+    returnCar.model = sp.getString('car_model');
+    returnCar.vin = sp.getString('car_vin');
 
     // CommonFuel index
     int index = sp.getInt('car_cf_index');
