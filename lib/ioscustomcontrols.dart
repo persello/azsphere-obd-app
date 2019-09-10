@@ -105,7 +105,7 @@ class CustomCupertinoTextStyles {
 /// or other [Widget] behind the [ListView]. By default, the title is empty
 /// and the [height] parameter is set to 60.
 class ListGroupSpacer extends StatelessWidget {
-  const ListGroupSpacer({this.title = "", this.height = 60});
+  const ListGroupSpacer({this.title = '', this.height = 60});
   final String title;
   final double height;
 
@@ -138,7 +138,7 @@ class ListGroupSpacer extends StatelessWidget {
 /// notified of changes with the [onChanged] callback.
 class ListSwitch extends StatefulWidget {
   ListSwitch(
-      {this.title = "",
+      {this.title = '',
       @required this.onChanged,
       this.initialValue = false,
       this.isLast = false});

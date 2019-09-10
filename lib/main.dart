@@ -1,32 +1,51 @@
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
-import 'package:flutter/cupertino.dart';
-
 import 'package:azsphere_obd_app/tabs/home/home.dart';
 import 'package:azsphere_obd_app/tabs/map/map.dart';
 import 'package:azsphere_obd_app/tabs/settings/settings.dart';
-
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' as Foundation;
+import 'package:logger/logger.dart';
 
 import 'globals.dart';
 
 void main() {
+  logger.i('Welcome to Azure Sphere OBD Driving Stats!');
+
+  if (Foundation.kDebugMode) {
+    logger.w('App is running in debug mode.');
+  } else {
+    logger.i('App is running in release mode.');
+    Logger.level = Level.nothing;
+  }
+
   // Limit to vertical orientation until layout is responsive.
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((_) {
     runApp(new MyApp());
   });
+
+  logger.v('Preferred orientation is now portrait only.');
+
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
     statusBarColor: Color.fromARGB(0, 0, 0, 0),
   ));
+
+  logger.v('Status bar is set to transparent.');
 }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    logger.i('MyApp started.');
+
     // Application setup, restore saved data
+    logger.v('Getting settings from storage.');
     appSettings = new StoredSettings();
     appSettings.restoreMapSettings();
+
+    logger.i('Map settings restored.');
 
     return CupertinoApp(
       title: 'OBD Driving Stats',
@@ -48,6 +67,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
+    // logger.v('Building main page.');
     //Bottom tab bar and upper container
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
@@ -85,17 +105,17 @@ class _MainPageState extends State<MainPage> {
         switch (index) {
           case 0:
             return CupertinoTabView(builder: (context) {
-              return HomeTab(title: "Home");
+              return HomeTab(title: 'Home');
             });
           case 1:
             return CupertinoTabView(builder: (context) {
-              return MapTab(title: "Map");
+              return MapTab(title: 'Map');
             });
           case 2:
             return CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
                 child: Center(
-                  child: Text("3"),
+                  child: Text('3'),
                 ),
               );
             });
@@ -103,14 +123,14 @@ class _MainPageState extends State<MainPage> {
             return CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
                 child: Center(
-                  child: Text("4"),
+                  child: Text('4'),
                 ),
               );
             });
           case 4:
           default:
             return CupertinoTabView(builder: (context) {
-              return SettingsTab(title: "Settings");
+              return SettingsTab(title: 'Settings');
             });
         }
       },

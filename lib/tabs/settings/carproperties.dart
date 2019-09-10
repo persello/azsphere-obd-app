@@ -24,13 +24,14 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
   FixedExtentScrollController _pickerScrollController;
 
   void showImagePicker() async {
+    logger.i('Showing picture source modal popup.');
     await showCupertinoModalPopup(
       context: context,
       builder: (BuildContext context) => CupertinoActionSheet(
-        title: Text("Add or change vehicle picture"),
-        message: Text("Please choose how to proceed."),
+        title: Text('Add or change vehicle picture'),
+        message: Text('Please choose how to proceed.'),
         cancelButton: CupertinoActionSheetAction(
-          child: Text("Cancel"),
+          child: Text('Cancel'),
           isDefaultAction: true,
           onPressed: () {
             Navigator.pop(context);
@@ -39,14 +40,20 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
         actions: <Widget>[
           // Gallery
           CupertinoActionSheetAction(
-            child: Text("Choose a picture from your gallery"),
+            child: Text('Choose a picture from your gallery'),
             onPressed: () async {
               // Close sheet
               Navigator.of(context, rootNavigator: true).pop(context);
 
+              logger.v('Sheet closed.');
+
+              logger.i('Opening picker.');
+
               // Open gallery
               var image = await ImagePicker.pickImage(
                   source: ImageSource.gallery, maxWidth: 1000);
+
+              logger.d('Selected image: "${image.path}."');
 
               setState(() {
                 car.imagePath = image.path;
@@ -56,14 +63,20 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
 
           // Camera
           CupertinoActionSheetAction(
-            child: Text("Take a new picture"),
+            child: Text('Take a new picture'),
             onPressed: () async {
               // Close sheet
               Navigator.of(context, rootNavigator: true).pop(context);
 
+              logger.v('Sheet closed.');
+
+              logger.i('Opening camera.');
+
               // Open camera
               var image = await ImagePicker.pickImage(
                   source: ImageSource.camera, maxWidth: 1000);
+
+                  logger.d('New image: "${image.path}".');
 
               setState(() {
                 car.imagePath = image.path;
@@ -73,11 +86,15 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
 
           // Remove
           CupertinoActionSheetAction(
-            child: Text("Remove"),
+            child: Text('Remove'),
             isDestructiveAction: true,
             onPressed: () {
               // Close sheet
               Navigator.of(context, rootNavigator: true).pop(context);
+
+              logger.v('Sheet closed.');
+
+              logger.i('Removing image.');
 
               // Remove
               setState(() {
@@ -92,15 +109,23 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
 
   /// Shows the fuel picker and changes the car's [Fuel] property accordingly.
   void showFuelPicker({BuildContext context}) {
+    logger.i('Preparing fuel picker.');
+
     // Gather the list of common fuels
     List<Widget> items = new List<Widget>();
     for (Fuel f in CommonFuels.list) {
       items.add(new Text(f.name));
+      logger.v('Adding ${f.name} to the fuels list.');
     }
 
     // Set to current
     _pickerScrollController = new FixedExtentScrollController(
         initialItem: CommonFuels.list.indexOf(car.fuel));
+
+    logger.d(
+        'Controller set to index of ${car.fuel.name}, which is ${_pickerScrollController.initialItem}.');
+
+    logger.v('Showing modal popup.');
 
     showCupertinoModalPopup(
       context: context,
@@ -115,6 +140,7 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
           onSelectedItemChanged: (int i) {
             setState(() {
               car.fuel = CommonFuels.list[i];
+              logger.i('Picker selection is now set on ${car.fuel.name} ($i).');
             });
           },
         ),
@@ -126,26 +152,36 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
   void initState() {
     super.initState();
 
+    logger.v('Car properties page is being initialized.');
+
     _brandTextField = new TextEditingController();
     _modelTextField = new TextEditingController();
     _vinTextField = new TextEditingController();
+
+    logger.v('Text editing controllers ready.');
 
     if (car.brand != null) _brandTextField.text = car.brand;
 
     if (car.model != null) _modelTextField.text = car.model;
 
     if (car.vin != null) _vinTextField.text = car.vin;
+
+    logger.d(
+        'Car info: brand is ${car.brand}, model is ${car.model} and VIN is ${car.vin}.');
   }
 
   // Save changes to non volatile memory on exit
   @override
   void dispose() {
+    logger.v('Car properties page is being disposed.');
+    logger.v('Storing car information.');
     car.save();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // logger.v('Building car properties page.');
     return CupertinoPageScaffold(
       backgroundColor: CustomCupertinoColors.systemGray6,
       child: CustomScrollView(
@@ -157,7 +193,7 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
             child: Column(
               children: <Widget>[
                 ListGroupSpacer(
-                  title: "Your car",
+                  title: 'Your car',
                 ),
 
                 // Brand
@@ -168,13 +204,13 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
                       Padding(
                         padding: EdgeInsets.only(top: 4, left: 4),
                         child: Text(
-                          "Brand",
+                          'Brand',
                           style: CustomCupertinoTextStyles.secondaryStyle,
                         ),
                       ),
                       CupertinoTextField(
                         decoration: null,
-                        placeholder: "Vehicle brand",
+                        placeholder: 'Vehicle brand',
                         textCapitalization: TextCapitalization.words,
                         controller: _brandTextField,
                         onChanged: (brand) {
@@ -193,13 +229,13 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
                       Padding(
                         padding: EdgeInsets.only(top: 4, left: 4),
                         child: Text(
-                          "Model",
+                          'Model',
                           style: CustomCupertinoTextStyles.secondaryStyle,
                         ),
                       ),
                       CupertinoTextField(
                         decoration: null,
-                        placeholder: "Vehicle model",
+                        placeholder: 'Vehicle model',
                         textCapitalization: TextCapitalization.words,
                         controller: _modelTextField,
                         onChanged: (model) {
@@ -218,13 +254,13 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
                       Padding(
                         padding: EdgeInsets.only(top: 4, left: 4),
                         child: Text(
-                          "VIN",
+                          'VIN',
                           style: CustomCupertinoTextStyles.secondaryStyle,
                         ),
                       ),
                       CupertinoTextField(
                         decoration: null,
-                        placeholder: "Vehicle identification number",
+                        placeholder: 'Vehicle identification number',
                         textCapitalization: TextCapitalization.characters,
                         autocorrect: false,
                         controller: _vinTextField,
@@ -243,7 +279,7 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
                     showImagePicker();
                   },
                   children: <Widget>[
-                    Text("Change vehicle picture"),
+                    Text('Change vehicle picture'),
                     Icon(
                       CupertinoIcons.right_chevron,
                       color: CustomCupertinoColors.systemGray4,
@@ -252,7 +288,7 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
                   padding: EdgeInsets.only(left: 16),
                 ),
 
-                ListGroupSpacer(title: "Fuel details"),
+                ListGroupSpacer(title: 'Fuel details'),
 
                 // Fuel
                 ListButton(
@@ -266,7 +302,7 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
                         Padding(
                           padding: EdgeInsets.only(top: 12, left: 4),
                           child: Text(
-                            "Fuel type",
+                            'Fuel type',
                             style: CustomCupertinoTextStyles.secondaryStyle,
                           ),
                         ),
@@ -291,12 +327,12 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                              "Mass air to fuel ratio is 1:${(1 / car.fuel.massAirFuelRatio).toStringAsFixed(1)}."),
+                              'Mass air to fuel ratio is 1:${(1 / car.fuel.massAirFuelRatio).toStringAsFixed(1)}.'),
 
                           // Display density when available
                           if (car.fuel.density != 0)
                             Text(
-                                "Density is ${(car.fuel.density).toStringAsFixed(3)} kg/l"),
+                                'Density is ${(car.fuel.density).toStringAsFixed(3)} kg/l'),
                         ],
                       ),
                     ),
