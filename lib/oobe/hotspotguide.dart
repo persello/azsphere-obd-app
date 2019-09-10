@@ -1,9 +1,9 @@
-import 'package:flutter/cupertino.dart';
-
-import 'package:carousel_slider/carousel_slider.dart';
-
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/oobe/devicesearch.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/cupertino.dart';
+
+import '../globals.dart';
 
 /// Connection page (second page), asks to enable hotspot.
 class HotspotGuidePage extends StatefulWidget {
@@ -18,6 +18,7 @@ class HotspotGuidePage extends StatefulWidget {
 class _HotspotGuidePageState extends State<HotspotGuidePage> {
   @override
   Widget build(BuildContext context) {
+    // logger.v('Building hotspot guide page.');
     return CupertinoPageScaffold(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -32,7 +33,7 @@ class _HotspotGuidePageState extends State<HotspotGuidePage> {
             padding: EdgeInsets.only(top: 120),
           ),
           Image.asset(
-            "assets/4.png",
+            'assets/4.png',
             height: 350,
           ),
           Container(
@@ -44,16 +45,16 @@ class _HotspotGuidePageState extends State<HotspotGuidePage> {
               pauseAutoPlayOnTouch: Duration(seconds: 12),
               items: <Widget>[
                 Text(
-                    "The device is configured to connect to a pre-set network with defined properties.",
+                    'The device is configured to connect to a pre-set network with defined properties.',
                     textAlign: TextAlign.center),
                 Text(
-                    "You can create an hotspot with your phone and get the board automatically connected.",
+                    'You can create an hotspot with your phone and get the board automatically connected.',
                     textAlign: TextAlign.center),
                 Text(
-                    "Set your hotspot's SSID (name) to \"OBDAZURESPHERECONF\" and its password to \"AZUREOBD\"",
+                    'Set your hotspot\'s SSID (name) to \'OBDAZURESPHERECONF\' and its password to \'AZUREOBD\'',
                     textAlign: TextAlign.center),
                 Text(
-                    "Remember that your mobile carrier may charge you for hotspot usage. If in doubt, disable mobile data first.",
+                    'Remember that your mobile carrier may charge you for hotspot usage. If in doubt, disable mobile data first.',
                     textAlign: TextAlign.center),
               ],
             ),
@@ -65,18 +66,20 @@ class _HotspotGuidePageState extends State<HotspotGuidePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 CupertinoButton(
-                    child: Text("Back"),
+                    child: Text('Back'),
                     onPressed: () {
+                      logger.i('Navigating back.');
                       Navigator.of(context, rootNavigator: true).pop();
                     }),
                 CupertinoButton(
-                  child: Text("Continue"),
+                  child: Text('Continue'),
                   color: CustomCupertinoColors.systemBlue,
                   onPressed: () {
+                    logger.i('Opening "Device search" page.');
                     Navigator.of(context, rootNavigator: true)
                         .push(CupertinoPageRoute(
                             builder: (context) => DeviceSearchPage(
-                                  title: "Searching",
+                                  title: 'Searching',
                                 )));
                   },
                 )

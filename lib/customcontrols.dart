@@ -19,7 +19,7 @@ class CircleProgressBar extends StatelessWidget {
   const CircleProgressBar({
     Key key,
     this.backgroundColor,
-    this.text = "",
+    this.text = '',
     @required this.foregroundColor,
     @required this.value,
   }) : super(key: key);
