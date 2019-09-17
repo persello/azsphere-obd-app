@@ -1,14 +1,22 @@
+import 'package:hive/hive.dart';
+
+part 'fuel.g.dart';
+
 /// Represents a type of fuel that can be used in a vehicle.
+@HiveType()
 class Fuel {
   const Fuel({this.name, this.massAirFuelRatio, this.density});
 
   /// The name of the fuel.
+  @HiveField(0)
   final String name;
 
   /// The default air to fuel ratio in terms of mass (stoichiometric ratio).
+  @HiveField(1)
   final double massAirFuelRatio;
 
   /// Density of the fuel in kg per liter.
+  @HiveField(2)
   final double density;
 }
 

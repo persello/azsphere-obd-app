@@ -1,58 +1,73 @@
-import 'dart:io';
+import 'package:hive/hive.dart';
 
-import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import '../globals.dart';
 import 'fuel.dart';
 
+part 'vehicle.g.dart';
+
+@HiveType()
 class Vehicle {
   Vehicle({this.brand, this.model, this.vin, this.fuel}) {
     fuel = CommonFuels.undefined;
+
+    logger.v('Vehicle constructor called, opening "vehicle-data" Hive box.');
+    _hiveReady = _getVehicleBox();
   }
 
+  Future _getVehicleBox() async {
+    if (!Hive.isBoxOpen('vehicle-data')) {
+      storedVehicleData = await Hive.openBox('vehicle-data');
+    } else {
+      storedVehicleData = Hive.box('vehicle-data');
+    }
+  }
+
+  @HiveField(0)
   String imagePath;
 
+  @HiveField(1)
   String brand;
+  @HiveField(2)
   String model;
+  @HiveField(3)
   String vin;
-
+  @HiveField(4)
   Fuel fuel;
 
+  Box storedVehicleData;
+  Future _hiveReady;
+
+  Future get hiveReady => _hiveReady;
+
   void save() async {
-    final SharedPreferences sp = await SharedPreferences.getInstance();
+    logger.v('Saving vehicle data');
 
-    // Car
-    sp.setString('car_brand', this.brand);
-    sp.setString('car_model', this.model);
-    sp.setString('car_vin', this.vin);
+    // Wait for hive initialization
+    await this.hiveReady;
 
-    // CommonFuel index
-    sp.setInt('car_cf_index', CommonFuels.list.indexOf(this.fuel));
+    storedVehicleData.put('vehicle', this);
 
-    // Image
-    sp.setString('car_imagepath', this.imagePath);
+    logger.d('Image path is "${this.imagePath}.');
   }
 
-  static Future<Vehicle> restore() async {
-    final SharedPreferences sp = await SharedPreferences.getInstance();
+  Future<Vehicle> restore() async {
+    logger.v('Restoring vehicle data.');
 
     Vehicle returnCar = new Vehicle();
 
-    // Car (leave null if null)
-    returnCar.brand = sp.getString('car_brand');
-    returnCar.model = sp.getString('car_model');
-    returnCar.vin = sp.getString('car_vin');
+    // Wait for hive initialization
+    await this.hiveReady;
+
+    returnCar = storedVehicleData.get('vehicle', defaultValue: new Vehicle());
 
     // CommonFuel index
-    int index = sp.getInt('car_cf_index');
-    if (index == null) {
+    if (returnCar.fuel.name == null) {
       returnCar.fuel = CommonFuels.undefined;
-    } else {
-      returnCar.fuel = CommonFuels.list[index];
     }
 
-    // Image
-    returnCar.imagePath = sp.getString('car_imagepath');
+    logger.d('Restored fuel is ${returnCar.fuel.name}.');
+
+    logger.d('Restored image path is ${returnCar.imagePath}.');
 
     return returnCar;
   }
