@@ -1,9 +1,11 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:logger/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'classes/device.dart';
 import 'classes/vehicle.dart';
+
+part 'globals.g.dart';
 
 StoredSettings appSettings;
 OBDScanner globalScanner;
@@ -36,51 +38,56 @@ class WiFiNetwork {
 
 /// The global app settings.
 class StoredSettings {
-  final MapViewSettingsData mapViewSettingsData = MapViewSettingsData();
+  StoredSettings() {
+    logger.v(
+        'StoredSettings constructor called, opening "app-settings" Hive box.');
+
+    // Opens the app settings box
+    getAppSettingsBox();
+  }
+
+  MapViewSettingsData mapViewSettingsData = MapViewSettingsData();
+  Box appSettings;
+
+  void getAppSettingsBox() async {
+    appSettings = await Hive.openBox('app-settings');
+    appSettings.registerAdapter(MapViewSettingsDataAdapter(), 0);
+  }
 
   /// Gets the last IP of the scanner from the shared preferences
-  static Future<String> restoreIp() async {
-    final SharedPreferences sp = await SharedPreferences.getInstance();
-
-    return sp.getString('scanner_last_ip') ?? '';
+  Future<String> restoreIp() async {
+    return appSettings.get('scanner-last-ip') ?? '';
   }
 
   /// Saves [ip] into the shared preferences
-  static void saveIp(String ip) async {
-    final SharedPreferences sp = await SharedPreferences.getInstance();
-
-    sp.setString('scanner_last_ip', ip);
+  void saveIp(String ip) async {
+    appSettings.put('scanner-last-ip', ip);
   }
 
   void restoreMapSettings() async {
     logger.i('Restoring map settings from storage.');
 
-    final SharedPreferences sp = await SharedPreferences.getInstance();
-
     // Map settings
-    this.mapViewSettingsData.mapType = MapType.values[
-        sp.getInt('mapViewSettingsData_mapType') ?? MapType.normal.index];
-    this.mapViewSettingsData.showMyLocation =
-        sp.getBool('mapViewSettingsData_showMyLocation') ?? true;
+    this.mapViewSettingsData = appSettings.get('map-view-settings');
   }
 
   void saveMapSettings() async {
     logger.i('Storing map settings.');
 
-    final SharedPreferences sp = await SharedPreferences.getInstance();
-
     // Map settings
-    sp.setInt(
-        'mapViewSettingsData_mapType', this.mapViewSettingsData.mapType.index);
-    sp.setBool('mapViewSettingsData_showMyLocation',
-        this.mapViewSettingsData.showMyLocation);
+    appSettings.put('map-view-settings', this.mapViewSettingsData);
   }
 }
 
 /// Map view settings.
+@HiveType()
 class MapViewSettingsData {
   MapViewSettingsData({this.showMyLocation, this.mapType});
+
+  @HiveField(0)
   bool showMyLocation;
+
   // Normal, hybrid or terrain
+  @HiveField(1)
   MapType mapType;
 }

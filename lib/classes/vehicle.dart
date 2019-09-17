@@ -1,58 +1,63 @@
-import 'dart:io';
+import 'package:hive/hive.dart';
 
-import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import '../globals.dart';
 import 'fuel.dart';
 
+part 'vehicle.g.dart';
+
+@HiveType()
 class Vehicle {
   Vehicle({this.brand, this.model, this.vin, this.fuel}) {
     fuel = CommonFuels.undefined;
+
+    logger.v('Vehicle constructor called, opening "vehicle-data" Hive box.');
+    getVehicleBox();
   }
 
+  void getVehicleBox() async {
+    storedVehicleData = await Hive.openBox('vehicle-data');
+
+    storedVehicleData.registerAdapter(VehicleAdapter(), 0);
+    storedVehicleData.registerAdapter(FuelAdapter(), 1);
+  }
+
+  @HiveField(0)
   String imagePath;
 
+  @HiveField(1)
   String brand;
+  @HiveField(2)
   String model;
+  @HiveField(3)
   String vin;
-
+  @HiveField(4)
   Fuel fuel;
 
+  Box storedVehicleData;
+
   void save() async {
-    final SharedPreferences sp = await SharedPreferences.getInstance();
+    logger.v('Saving vehicle data');
 
-    // Car
-    sp.setString('car_brand', this.brand);
-    sp.setString('car_model', this.model);
-    sp.setString('car_vin', this.vin);
+    storedVehicleData.put('vehicle', this);
 
-    // CommonFuel index
-    sp.setInt('car_cf_index', CommonFuels.list.indexOf(this.fuel));
-
-    // Image
-    sp.setString('car_imagepath', this.imagePath);
+    logger.d('Image path is "${this.imagePath}.');
   }
 
-  static Future<Vehicle> restore() async {
-    final SharedPreferences sp = await SharedPreferences.getInstance();
+  Future<Vehicle> restore() async {
+    logger.v('Restoring vehicle data.');
 
     Vehicle returnCar = new Vehicle();
 
-    // Car (leave null if null)
-    returnCar.brand = sp.getString('car_brand');
-    returnCar.model = sp.getString('car_model');
-    returnCar.vin = sp.getString('car_vin');
+    returnCar = storedVehicleData.get('vehicle');
 
     // CommonFuel index
-    int index = sp.getInt('car_cf_index');
-    if (index == null) {
+    if (returnCar.fuel.name == null) {
       returnCar.fuel = CommonFuels.undefined;
-    } else {
-      returnCar.fuel = CommonFuels.list[index];
     }
 
-    // Image
-    returnCar.imagePath = sp.getString('car_imagepath');
+    logger.d('Restored fuel is ${returnCar.fuel.name}.');
+
+    logger.d('Restored image path is ${returnCar.imagePath}.');
 
     return returnCar;
   }

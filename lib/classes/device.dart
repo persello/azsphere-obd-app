@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math' as Math;
 
 import 'package:azsphere_obd_app/globals.dart';
+import 'package:hive/hive.dart';
 
 const String MessageHeader_Ping = 'PING';
 const String MessageHeader_ScanWiFiNetworks = 'WISC';
@@ -48,6 +49,9 @@ enum OBDScannerConnectionStatus {
 
 /// The main class for describing a wireless OBD scanner.
 class OBDScanner {
+  /// The Hive box for this class
+  Box savedScanner;
+
   /// The status of the Wi-Fi connection.
   OBDScannerConnectionStatus status = OBDScannerConnectionStatus.STATUS_UNKNOWN;
 
@@ -98,7 +102,19 @@ class OBDScanner {
       this.onMessageReceived,
       this.onConnectionChanged,
       this.onButtonAPressed,
-      this.onButtonBPressed});
+      this.onButtonBPressed}) {
+    if (Hive.isBoxOpen('scanner')) {
+      this.savedScanner = Hive.box('scanner');
+    } else {
+      getDeviceBox();
+    }
+
+    logger.v('OBDScanner constructor called, opening "scanner" Hive box.');
+  }
+
+  void getDeviceBox() async {
+    this.savedScanner = await Hive.openBox('scanner');
+  }
 
   /// Utility function that converts a size from [bytes]
   /// to an appropriate value.
@@ -139,6 +155,16 @@ class OBDScanner {
     return '${value.toStringAsFixed(2)} $suffix';
   }
 
+  /// Saves the current IP address of this object in the scanner's Hive box.
+  void saveIpAddress() {
+    savedScanner.put('ip-address', this.ipAddress);
+  }
+
+  /// Sets the IP address based on the last successful connection's IP address from the scanner's Hive box.
+  void restoreLastIpAddress() {
+    this.ipAddress = savedScanner.get('ip-address');
+  }
+
   /// Tries to connect to the object's ip address.
   ///
   /// Sets the [_socket] variable and starts the [_pingTimer]
@@ -151,7 +177,7 @@ class OBDScanner {
 
       _pingTimer = Timer.periodic(Duration(seconds: 10), (Timer t) => _ping());
     }).catchError((e) {
-            closeConnection();
+      closeConnection();
     });
   }
 
@@ -189,6 +215,8 @@ class OBDScanner {
   ///
   /// Calls [onConnectionChanged] after actually closing the socket.
   void closeConnection() {
+    // logger.w('Closing connection to the scanner.');
+
     if (_pingTimer != null) {
       _pingTimer.cancel();
     }
@@ -209,6 +237,8 @@ class OBDScanner {
   /// [onMessageReceived] callback function and passes the latest message
   /// as an argument.
   void _newTCPData(data) {
+    logger.v('New TCP data received ($data).');
+
     // First, we update the ping time because our device is connected
     _pingResponsePending = false;
 
@@ -218,6 +248,7 @@ class OBDScanner {
     // Then, if the value corresponds to an initialization message, we change the connection status if not already done.
     if (status == OBDScannerConnectionStatus.STATUS_UNKNOWN &&
         received.startsWith('Azure Sphere OBD Scanner')) {
+      logger.i('Device recognized by header.');
       status = OBDScannerConnectionStatus.STATUS_CONNECTED;
       onConnectionChanged(this, status);
       return;
@@ -258,13 +289,15 @@ class OBDScanner {
   bool parse(TCPMessage message) {
     bool ret = true;
 
+    logger.v('Parsing new message');
+
     switch (message.header) {
       case MessageHeader_Ping:
         // Not only here anymore: every piece of data serves as ping, so it works even during file transfer
 
         lastSuccessfulPing = DateTime.now();
 
-        // Changing status from disconnected to connected is only allowed with a PING response,
+        // Changing status from disconnected to connected is only allowed with a PING response or with a header,
         // otherwise other devices might be recognised as scanners.
         if (status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
           status = OBDScannerConnectionStatus.STATUS_CONNECTED;
