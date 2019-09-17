@@ -4,8 +4,8 @@ on:
     - master
     
 jobs:
-  test:
-    name: Test
+  build:
+    name: Build
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
@@ -16,5 +16,4 @@ jobs:
       with:
         flutter-version: '1.9.1+hotfix.2'
     - run: flutter pub get
-    - run: flutter test
     - run: flutter build apk
