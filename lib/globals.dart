@@ -1,6 +1,6 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:azsphere_obd_app/tabs/map/viewsettings.dart';
+import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'classes/device.dart';
 import 'classes/vehicle.dart';
@@ -8,6 +8,7 @@ import 'classes/vehicle.dart';
 StoredSettings appSettings;
 OBDScanner globalScanner;
 Vehicle car = new Vehicle();
+Logger logger = new Logger(printer: PrettyPrinter(methodCount: 0));
 
 /// A container class for a Wi-Fi network.
 ///
@@ -52,6 +53,8 @@ class StoredSettings {
   }
 
   void restoreMapSettings() async {
+    logger.i('Restoring map settings from storage.');
+
     final SharedPreferences sp = await SharedPreferences.getInstance();
 
     // Map settings
@@ -62,12 +65,14 @@ class StoredSettings {
   }
 
   void saveMapSettings() async {
+    logger.i('Storing map settings.');
+
     final SharedPreferences sp = await SharedPreferences.getInstance();
 
     // Map settings
     sp.setInt(
-        "mapViewSettingsData_mapType", this.mapViewSettingsData.mapType.index);
-    sp.setBool("mapViewSettingsData_showMyLocation",
+        'mapViewSettingsData_mapType', this.mapViewSettingsData.mapType.index);
+    sp.setBool('mapViewSettingsData_showMyLocation',
         this.mapViewSettingsData.showMyLocation);
   }
 }
