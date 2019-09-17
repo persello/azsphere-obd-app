@@ -57,7 +57,7 @@ class _MapTabState extends State<MapTab> {
             myLocationButtonEnabled: true,
             myLocationEnabled: appSettings.mapViewSettingsData.showMyLocation,
             padding: EdgeInsets.fromLTRB(0, 70, 0, 50),
-            mapType: appSettings.mapViewSettingsData.mapType,
+            mapType: MapType.values[appSettings.mapViewSettingsData.mapType],
             tiltGesturesEnabled: false,
           ),
           Center(

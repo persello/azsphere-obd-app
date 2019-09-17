@@ -11,14 +11,15 @@ class Vehicle {
     fuel = CommonFuels.undefined;
 
     logger.v('Vehicle constructor called, opening "vehicle-data" Hive box.');
-    getVehicleBox();
+    _hiveReady = _getVehicleBox();
   }
 
-  void getVehicleBox() async {
-    storedVehicleData = await Hive.openBox('vehicle-data');
-
-    storedVehicleData.registerAdapter(VehicleAdapter(), 0);
-    storedVehicleData.registerAdapter(FuelAdapter(), 1);
+  Future _getVehicleBox() async {
+    if (!Hive.isBoxOpen('vehicle-data')) {
+      storedVehicleData = await Hive.openBox('vehicle-data');
+    } else {
+      storedVehicleData = Hive.box('vehicle-data');
+    }
   }
 
   @HiveField(0)
@@ -34,9 +35,15 @@ class Vehicle {
   Fuel fuel;
 
   Box storedVehicleData;
+  Future _hiveReady;
+
+  Future get hiveReady => _hiveReady;
 
   void save() async {
     logger.v('Saving vehicle data');
+
+    // Wait for hive initialization
+    await this.hiveReady;
 
     storedVehicleData.put('vehicle', this);
 
@@ -48,7 +55,10 @@ class Vehicle {
 
     Vehicle returnCar = new Vehicle();
 
-    returnCar = storedVehicleData.get('vehicle');
+    // Wait for hive initialization
+    await this.hiveReady;
+
+    returnCar = storedVehicleData.get('vehicle', defaultValue: new Vehicle());
 
     // CommonFuel index
     if (returnCar.fuel.name == null) {

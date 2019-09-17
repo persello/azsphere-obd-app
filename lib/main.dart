@@ -11,20 +11,27 @@ import 'package:hive/hive.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'classes/fuel.dart';
+import 'classes/vehicle.dart';
 import 'globals.dart';
 
-void main() {
+void main() async {
   logger.i('Welcome to Azure Sphere OBD Driving Stats!');
 
-  logger.i('Setting up Hive path.');
+  logger.i('Setting up Hive path and adapters.');
 
+  // App folder
   Directory directory;
+  directory = await getApplicationDocumentsDirectory();
 
-  getApplicationDocumentsDirectory().then((Directory d) {
-    directory = d;
-  });
+  // Database location
+  Hive.init('${directory.path}/hive');
 
-  Hive.init('$directory/hive');
+  // Adapters (one-time registration)
+  Hive.registerAdapter(VehicleAdapter(), HIVE_VEHICLE_ADAPTER_ID);
+  Hive.registerAdapter(FuelAdapter(), HIVE_FUEL_ADAPTER_ID);
+  Hive.registerAdapter(
+      MapViewSettingsDataAdapter(), HIVE_MAP_VIEW_SETTINGS_ADAPTER_ID);
 
   if (Foundation.kDebugMode) {
     logger.w('App is running in debug mode.');

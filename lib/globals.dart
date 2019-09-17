@@ -7,6 +7,10 @@ import 'classes/vehicle.dart';
 
 part 'globals.g.dart';
 
+const int HIVE_MAP_VIEW_SETTINGS_ADAPTER_ID = 0;
+const int HIVE_VEHICLE_ADAPTER_ID = 1;
+const int HIVE_FUEL_ADAPTER_ID = 2;
+
 StoredSettings appSettings;
 OBDScanner globalScanner;
 Vehicle car = new Vehicle();
@@ -43,40 +47,38 @@ class StoredSettings {
         'StoredSettings constructor called, opening "app-settings" Hive box.');
 
     // Opens the app settings box
-    getAppSettingsBox();
+    _hiveReady = getAppSettingsBox();
   }
 
   MapViewSettingsData mapViewSettingsData = MapViewSettingsData();
   Box appSettings;
 
-  void getAppSettingsBox() async {
+  Future getAppSettingsBox() async {
     appSettings = await Hive.openBox('app-settings');
-    appSettings.registerAdapter(MapViewSettingsDataAdapter(), 0);
-  }
-
-  /// Gets the last IP of the scanner from the shared preferences
-  Future<String> restoreIp() async {
-    return appSettings.get('scanner-last-ip') ?? '';
-  }
-
-  /// Saves [ip] into the shared preferences
-  void saveIp(String ip) async {
-    appSettings.put('scanner-last-ip', ip);
   }
 
   void restoreMapSettings() async {
     logger.i('Restoring map settings from storage.');
 
+    await this.hiveReady;
+
     // Map settings
-    this.mapViewSettingsData = appSettings.get('map-view-settings');
+    this.mapViewSettingsData = appSettings.get('map-view-settings', defaultValue: new MapViewSettingsData(showMyLocation: true, mapType: MapType.normal.index));
   }
 
   void saveMapSettings() async {
     logger.i('Storing map settings.');
 
+    await this.hiveReady;
+
     // Map settings
     appSettings.put('map-view-settings', this.mapViewSettingsData);
   }
+
+  Future _hiveReady;
+
+  Future get hiveReady => _hiveReady;
+
 }
 
 /// Map view settings.
@@ -89,5 +91,5 @@ class MapViewSettingsData {
 
   // Normal, hybrid or terrain
   @HiveField(1)
-  MapType mapType;
+  int mapType;
 }

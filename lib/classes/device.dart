@@ -96,6 +96,10 @@ class OBDScanner {
   /// The size of the SD card in kB.
   int sdCardSize = 0;
 
+  Future _hiveReady;
+
+  Future get hiveReady => _hiveReady;
+
   // Constructor
   OBDScanner(
       {this.ipAddress,
@@ -106,13 +110,13 @@ class OBDScanner {
     if (Hive.isBoxOpen('scanner')) {
       this.savedScanner = Hive.box('scanner');
     } else {
-      getDeviceBox();
+      _hiveReady = getDeviceBox();
     }
 
     logger.v('OBDScanner constructor called, opening "scanner" Hive box.');
   }
 
-  void getDeviceBox() async {
+  Future getDeviceBox() async {
     this.savedScanner = await Hive.openBox('scanner');
   }
 
@@ -156,12 +160,14 @@ class OBDScanner {
   }
 
   /// Saves the current IP address of this object in the scanner's Hive box.
-  void saveIpAddress() {
+  void saveIpAddress() async {
+    await this.hiveReady;
     savedScanner.put('ip-address', this.ipAddress);
   }
 
   /// Sets the IP address based on the last successful connection's IP address from the scanner's Hive box.
-  void restoreLastIpAddress() {
+  void restoreLastIpAddress() async {
+    await this.hiveReady;
     this.ipAddress = savedScanner.get('ip-address');
   }
 

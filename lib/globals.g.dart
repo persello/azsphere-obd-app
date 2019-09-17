@@ -15,7 +15,7 @@ class MapViewSettingsDataAdapter extends TypeAdapter<MapViewSettingsData> {
     };
     return MapViewSettingsData(
       showMyLocation: fields[0] as bool,
-      mapType: fields[1] as MapType,
+      mapType: fields[1] as int,
     );
   }
 
