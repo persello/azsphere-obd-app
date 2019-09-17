@@ -50,9 +50,9 @@ def keystoreProperties = new Properties()
     signingConfigs {
        release {
            keyAlias keystoreProperties['keyAlias']
-           keyPassword System.getenv("KEY_PASSWORD")
+           keyPassword System.getenv("KEYSTORE_PASSWORD")
            storeFile file(keystoreProperties['storeFile'])
-           storePassword System.getenv("KEY_PASSWORD")
+           storePassword System.getenv("KEYSTORE_PASSWORD")
        }
    }
    buildTypes {
