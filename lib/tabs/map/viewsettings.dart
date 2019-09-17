@@ -55,13 +55,13 @@ class _MapViewSettingsState extends State<MapViewSettings> {
               onValueChanged: (int selectedMapType) {
                 logger.d('Selected map type is now ${MapType.values[selectedMapType]}');
                 setState(() {
-                  widget.data.mapType = MapType.values[selectedMapType];
+                  widget.data.mapType = selectedMapType;
                   appSettings.saveMapSettings();
                 });
               },
               children: widget.mapTypeChoices,
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              groupValue: widget.data.mapType.index,
+              groupValue: widget.data.mapType,
             ),
           ),
         ],

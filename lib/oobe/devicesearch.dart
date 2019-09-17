@@ -129,7 +129,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
       logger.i('Device found.');
 
       // Save the IP address
-      StoredSettings.saveIp(scanner.ipAddress);
+      scanner.saveIpAddress();
 
       // Make it global and wait for btn. press
       globalScanner = scanner;

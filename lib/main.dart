@@ -1,16 +1,37 @@
+import 'dart:io';
+
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/tabs/home/home.dart';
 import 'package:azsphere_obd_app/tabs/map/map.dart';
 import 'package:azsphere_obd_app/tabs/settings/settings.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' as Foundation;
+import 'package:flutter/services.dart';
+import 'package:hive/hive.dart';
 import 'package:logger/logger.dart';
+import 'package:path_provider/path_provider.dart';
 
+import 'classes/fuel.dart';
+import 'classes/vehicle.dart';
 import 'globals.dart';
 
-void main() {
+void main() async {
   logger.i('Welcome to Azure Sphere OBD Driving Stats!');
+
+  logger.i('Setting up Hive path and adapters.');
+
+  // App folder
+  Directory directory;
+  directory = await getApplicationDocumentsDirectory();
+
+  // Database location
+  Hive.init('${directory.path}/hive');
+
+  // Adapters (one-time registration)
+  Hive.registerAdapter(VehicleAdapter(), HIVE_VEHICLE_ADAPTER_ID);
+  Hive.registerAdapter(FuelAdapter(), HIVE_FUEL_ADAPTER_ID);
+  Hive.registerAdapter(
+      MapViewSettingsDataAdapter(), HIVE_MAP_VIEW_SETTINGS_ADAPTER_ID);
 
   if (Foundation.kDebugMode) {
     logger.w('App is running in debug mode.');

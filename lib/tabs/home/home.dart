@@ -61,7 +61,7 @@ class _HomeTabState extends State<HomeTab> {
       });
 
       // We are now connected, let's save the IP address
-      StoredSettings.saveIp(scanner.ipAddress);
+      scanner.saveIpAddress();
 
       // Make it global
       globalScanner = scanner;
@@ -84,7 +84,7 @@ class _HomeTabState extends State<HomeTab> {
         globalScanner?.status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
       // Every five addresses try last successful IP
       if (lastIpByteTried % 5 == 0 && !lastScanWasDefaultIp) {
-        scanner.ipAddress = await StoredSettings.restoreIp();
+        scanner.restoreLastIpAddress();
         scanner.connect();
         lastScanWasDefaultIp = true;
       } else {
@@ -142,11 +142,11 @@ class _HomeTabState extends State<HomeTab> {
       searchingForScanner = true;
 
       // Get last successful IP from settings
-      String lastSuccessfulIp = await StoredSettings.restoreIp();
+      OBDScanner scanner = new OBDScanner();
 
-      logger.d('The last IP of the device was $lastSuccessfulIp.');
+      scanner.restoreLastIpAddress();
 
-      OBDScanner scanner = new OBDScanner(ipAddress: lastSuccessfulIp);
+      logger.d('The last IP of the device was ${scanner.ipAddress}.');
 
       // Try the first connection
       scanner.onConnectionChanged = scannerConnectionChanged;
@@ -159,7 +159,8 @@ class _HomeTabState extends State<HomeTab> {
 
   void getCarFromMemory() async {
     logger.i('Getting car properties from storage.');
-    Vehicle x = await Vehicle.restore();
+    Vehicle x = new Vehicle();
+    x = await x.restore();
     setState(() {
       car = x;
     });
