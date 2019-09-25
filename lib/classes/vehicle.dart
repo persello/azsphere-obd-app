@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 
 import '../globals.dart';
 import 'fuel.dart';
+import 'logdata.dart';
 
 part 'vehicle.g.dart';
 
@@ -33,6 +34,8 @@ class Vehicle {
   String vin;
   @HiveField(4)
   Fuel fuel;
+  @HiveField(5)
+  List<LogSession> logSessions = new List<LogSession>();
 
   Box storedVehicleData;
   Future _hiveReady;

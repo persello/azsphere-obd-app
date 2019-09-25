@@ -18,13 +18,15 @@ class VehicleAdapter extends TypeAdapter<Vehicle> {
       model: fields[2] as String,
       vin: fields[3] as String,
       fuel: fields[4] as Fuel,
-    )..imagePath = fields[0] as String;
+    )
+      ..imagePath = fields[0] as String
+      ..logSessions = (fields[5] as List)?.cast<LogSession>();
   }
 
   @override
   void write(BinaryWriter writer, Vehicle obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.imagePath)
       ..writeByte(1)
@@ -34,6 +36,8 @@ class VehicleAdapter extends TypeAdapter<Vehicle> {
       ..writeByte(3)
       ..write(obj.vin)
       ..writeByte(4)
-      ..write(obj.fuel);
+      ..write(obj.fuel)
+      ..writeByte(5)
+      ..write(obj.logSessions);
   }
 }

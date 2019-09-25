@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:azsphere_obd_app/classes/logdata.dart';
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/tabs/home/home.dart';
 import 'package:azsphere_obd_app/tabs/map/map.dart';
@@ -30,8 +31,10 @@ void main() async {
   // Adapters (one-time registration)
   Hive.registerAdapter(VehicleAdapter(), HIVE_VEHICLE_ADAPTER_ID);
   Hive.registerAdapter(FuelAdapter(), HIVE_FUEL_ADAPTER_ID);
-  Hive.registerAdapter(
-      MapViewSettingsDataAdapter(), HIVE_MAP_VIEW_SETTINGS_ADAPTER_ID);
+  Hive.registerAdapter(MapViewSettingsDataAdapter(), HIVE_MAP_VIEW_SETTINGS_ADAPTER_ID);
+  Hive.registerAdapter(RawLogItemTypeAdapter(), HIVE_RAW_LOG_ITEM_ADAPTER_ID);
+  Hive.registerAdapter(LogSessionAdapter(), HIVE_LOG_SESSION_ADAPTER_ID);
+  Hive.registerAdapter(RawTimedItemAdapter(), HIVE_RAW_TIMED_ITEM_ADAPTER_ID);
 
   if (Foundation.kDebugMode) {
     logger.w('App is running in debug mode.');
@@ -41,8 +44,7 @@ void main() async {
   }
 
   // Limit to vertical orientation until layout is responsive.
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-      .then((_) {
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
     runApp(new MyApp());
   });
 
@@ -58,6 +60,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
+  
   Widget build(BuildContext context) {
     logger.i('MyApp started.');
 
