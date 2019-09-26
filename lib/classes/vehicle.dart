@@ -1,3 +1,4 @@
+import 'package:azsphere_obd_app/classes/device.dart';
 import 'package:hive/hive.dart';
 
 import '../globals.dart';
@@ -6,12 +7,14 @@ import 'logdata.dart';
 
 part 'vehicle.g.dart';
 
+// TODO: FIX FUEL TYPE NOT BEING RESTORED!!
+
 @HiveType()
 class Vehicle {
   Vehicle({this.brand, this.model, this.vin, this.fuel}) {
     fuel = CommonFuels.undefined;
 
-    logger.v('Vehicle constructor called, opening "vehicle-data" Hive box.');
+    // logger.v('Vehicle constructor called, opening "vehicle-data" Hive box.');
     _hiveReady = _getVehicleBox();
   }
 
@@ -36,6 +39,8 @@ class Vehicle {
   Fuel fuel;
   @HiveField(5)
   List<LogSession> logSessions = new List<LogSession>();
+  @HiveField(6)
+  List<RemoteFile> knownFiles = new List<RemoteFile>();
 
   Box storedVehicleData;
   Future _hiveReady;

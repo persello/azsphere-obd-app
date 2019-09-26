@@ -32,11 +32,18 @@ const String MessageHeader_GetFileContent = 'GFIL';
 class TCPMessage {
   TCPMessage({this.arguments, this.header});
   TCPMessage.fromString(String s) {
-    this.header = s.trim().substring(0, 4);
-    this.arguments = s.trim().substring(4);
+    if (s.length >= 4) {
+      this.header = s.trim().substring(0, 4);
+      this.arguments = s.trim().substring(4);
+    }
   }
   String header;
   String arguments;
+
+  @override
+  String toString() {
+    return (this.header ?? '') + (this.arguments ?? '');
+  }
 }
 
 enum OBDScannerConnectionStatus {
@@ -176,8 +183,7 @@ class OBDScanner {
   /// Sets the [_socket] variable and starts the [_pingTimer]
   /// if the operation is successful.
   void connect() {
-    Socket.connect(ipAddress, 15500, timeout: Duration(milliseconds: 150))
-        .then((Socket s) {
+    Socket.connect(ipAddress, 15500, timeout: Duration(milliseconds: 150)).then((Socket s) {
       _socket = s;
       _socket.listen(_newTCPData, onError: _socketError);
 
@@ -243,7 +249,7 @@ class OBDScanner {
   /// [onMessageReceived] callback function and passes the latest message
   /// as an argument.
   void _newTCPData(data) {
-    logger.v('New TCP data received ($data).');
+    // logger.v('New TCP data received (${new String.fromCharCodes(data)}).');
 
     // First, we update the ping time because our device is connected
     _pingResponsePending = false;
@@ -252,7 +258,7 @@ class OBDScanner {
     String received = new String.fromCharCodes(data);
 
     // Then, if the value corresponds to an initialization message, we change the connection status if not already done.
-    if (status == OBDScannerConnectionStatus.STATUS_UNKNOWN &&
+    if ((status == OBDScannerConnectionStatus.STATUS_UNKNOWN || status == OBDScannerConnectionStatus.STATUS_DISCONNECTED) &&
         received.startsWith('Azure Sphere OBD Scanner')) {
       logger.i('Device recognized by header.');
       status = OBDScannerConnectionStatus.STATUS_CONNECTED;
@@ -271,8 +277,7 @@ class OBDScanner {
       int indexOfReturn = _receiveBuffer.toString().indexOf('\r\n');
 
       // We consider the current message's string as the first part of the buffer, until the \r character
-      String currentMessageString =
-          _receiveBuffer.toString().substring(0, indexOfReturn);
+      String currentMessageString = _receiveBuffer.toString().substring(0, indexOfReturn);
 
       // Then we consider the remaining part
       String temp = _receiveBuffer.toString().substring(indexOfReturn + 2);
@@ -295,7 +300,7 @@ class OBDScanner {
   bool parse(TCPMessage message) {
     bool ret = true;
 
-    logger.v('Parsing new message');
+    // logger.v('Parsing new message');
 
     switch (message.header) {
       case MessageHeader_Ping:
@@ -364,7 +369,7 @@ class OBDScanner {
 
             // Then, for each network we compare only the SSID and we set the index accordingly
             // This does not take into account multiple entries with the same name, since this removes duplicates by itself
-            // TODO: Use BSSID instead
+            // TODO: IMPLEMENT IN FIRMWARE: Use BSSID instead
             for (WiFiNetwork existingNetwork in networks) {
               if (existingNetwork.ssid == n.ssid) {
                 indexWithSameSSID = networks.indexOf(existingNetwork);
@@ -437,8 +442,7 @@ class OBDScanner {
             }
             // Otherwise we update only the parameters given by the scanned network list (RSSI, isCurrentlyAvailable)
             else {
-              networks[indexWithSameSSID].isCurrentlyAvailable =
-                  n.isCurrentlyAvailable;
+              networks[indexWithSameSSID].isCurrentlyAvailable = n.isCurrentlyAvailable;
               networks[indexWithSameSSID].rssi = n.rssi;
               networks[indexWithSameSSID].isProtected = n.isProtected;
             }

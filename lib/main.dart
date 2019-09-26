@@ -35,6 +35,7 @@ void main() async {
   Hive.registerAdapter(RawLogItemTypeAdapter(), HIVE_RAW_LOG_ITEM_ADAPTER_ID);
   Hive.registerAdapter(LogSessionAdapter(), HIVE_LOG_SESSION_ADAPTER_ID);
   Hive.registerAdapter(RawTimedItemAdapter(), HIVE_RAW_TIMED_ITEM_ADAPTER_ID);
+  Hive.registerAdapter(RemoteFileAdapter(), HIVE_REMOTE_FILE_ADAPTER_ID);
 
   if (Foundation.kDebugMode) {
     logger.w('App is running in debug mode.');

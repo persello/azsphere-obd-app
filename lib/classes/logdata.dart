@@ -10,11 +10,11 @@ class SessionImporter {
   static List<LogSession> logSessionListFromString(String input) {
     List<RawTimedItem> temporaryItemBuffer = new List<RawTimedItem>();
 
-    logger.i("Importing session from string. String size is ${input.length} bytes.");
+    logger.i('Importing session from string. String size is ${input.length} bytes.');
 
-    List<String> rawItems = input.split("\n");
+    List<String> rawItems = input.split('\n');
 
-    logger.i("Input splitted into ${rawItems.length} parts.");
+    logger.i('Input splitted into ${rawItems.length} parts.');
 
     for (String rawItem in rawItems) {
       RawTimedItem timedItem = new RawTimedItem();
@@ -24,13 +24,13 @@ class SessionImporter {
       }
     }
 
-    logger.i("${temporaryItemBuffer.length} out of ${rawItems.length} were correctly parsed.");
+    logger.i('${temporaryItemBuffer.length} out of ${rawItems.length} were correctly parsed.');
 
-    logger.v("Sorting log item list chronologically.");
+    logger.v('Sorting log item list chronologically.');
 
     temporaryItemBuffer.sort((a, b) => a.gmtDateTime.compareTo(b.gmtDateTime));
 
-    logger.v("Splitting into sessions.");
+    logger.v('Splitting into sessions.');
 
     List<LogSession> returnList = new List<LogSession>();
 
@@ -41,11 +41,15 @@ class SessionImporter {
       if (temporaryItemBuffer[i + 1].gmtDateTime.difference(temporaryItemBuffer[i].gmtDateTime).inMinutes >
           2) {
         // Prepare
+        try {
         currentSession.complete = true;
         currentSession.normalizeDateTime();
         currentSession.startGmtDateTime = currentSession.rawTimedData.first.gmtDateTime;
         currentSession.stopGmtDateTime = currentSession.rawTimedData.last.gmtDateTime;
         returnList.add(currentSession);
+        } catch (ex) {
+          logger.w('Error while splitting sessions: ${ex.toString}.');
+        }
 
         // Reset the current session
         currentSession = new LogSession();
@@ -56,7 +60,9 @@ class SessionImporter {
       }
     }
 
-    logger.i("${returnList.length} sessions created.");
+    returnList.add(currentSession);
+
+    logger.i('${returnList.length} sessions created.');
 
     return returnList;
   }
@@ -83,9 +89,9 @@ class LogSession {
   /// This is used to cancel time jumps when the device's clock
   /// is synced to a GPS satellite or a server.
   void normalizeDateTime() {
-    logger.i("Normalizing log session date/time.");
+    logger.i('Normalizing log session date/time.');
 
-    logger.v("Sorting timed data log items.");
+    logger.v('Sorting timed data log items.');
 
     rawTimedData.sort((a, b) => (a.gmtDateTime.compareTo(b.gmtDateTime)));
 
@@ -93,7 +99,7 @@ class LogSession {
     DateTime before;
     Duration delta = Duration.zero;
 
-    for (int i = rawTimedData.length - 1; i >= 0; i--) {
+    for (int i = rawTimedData.length - 1; i > 0; i--) {
       if (rawTimedData[i].type == RawLogItemType.TimeUpdateAfter) {
         // Calculate delta (remember to subtract exactly one second)
         after = rawTimedData[i].gmtDateTime;
@@ -102,7 +108,7 @@ class LogSession {
 
         // Clear time markers
         rawTimedData.removeAt(i);
-        rawTimedData.removeAt(i);
+        rawTimedData.removeAt(i - 1);
         i--;
       } else {
         // Align times
@@ -110,7 +116,8 @@ class LogSession {
       }
     }
 
-    logger.i("Normalization complete: last total delta was ${delta.inMilliseconds} milliseconds (${delta.inDays} days).");
+    logger.i(
+        'Normalization complete: last total delta was ${delta.inMilliseconds} milliseconds (${delta.inDays} days).');
   }
 }
 
@@ -120,35 +127,42 @@ class RawTimedItem {
   /// Populates the properties based on the raw string content.
   /// returns [true] if successful, [false] if not.
   bool fromString(String rawContent) {
-    logger.d("Trying to parse log line: $rawContent.");
+    // logger.d('Trying to parse log line: $rawContent.');
 
-    // Date and time
-    String rawDateTime = rawContent.split("\t")[0];
-    gmtDateTime = DateTime.tryParse(rawDateTime);
-
-    // Type
-    String rawType = rawContent.split("\t")[1];
+    String rawType;
+    String rawDateTime;
 
     try {
-      type = _typeMap[rawType];
+      // Date and time
+      rawDateTime = rawContent.split('\t')[0];
+      gmtDateTime = DateTime.tryParse(rawDateTime);
     } catch (ex) {
-      logger.w("Error while parsing log line type: Input was $rawType. Error: ${ex.toString}.");
+      logger.w('Error while parsing log line date/time: Input was $rawDateTime. Error: ${ex.toString}.');
       return false;
     }
 
-    // Content
-    switch (type) {
-      // These types have textual information
-      case RawLogItemType.Initializer:
-      case RawLogItemType.TimeUpdateBefore:
-      case RawLogItemType.TimeUpdateAfter:
-        textContent = rawContent.split("\t")[2];
-        break;
+    try {
+      // Type
+      rawType = rawContent.split('\t')[1];
+      type = _typeMap[rawType];
 
-      // Other ones are numbers
-      default:
-        numericContent = double.tryParse(rawContent.split("\t")[2]);
-        break;
+      // Content
+      switch (type) {
+        // These types have textual information
+        case RawLogItemType.Initializer:
+        case RawLogItemType.TimeUpdateBefore:
+        case RawLogItemType.TimeUpdateAfter:
+          textContent = rawContent.split('\t')[2];
+          break;
+
+        // Other ones are numbers
+        default:
+          numericContent = double.tryParse(rawContent.split('\t')[2]);
+          break;
+      }
+    } catch (ex) {
+      logger.w('Error while parsing log line type: Input was $rawType. Error: ${ex.toString}.');
+      return false;
     }
 
     if ((textContent == null && numericContent == null) || gmtDateTime == null) {
@@ -160,20 +174,20 @@ class RawTimedItem {
 
   /// Private map of all the log item types with relative string identifiers.
   static const Map _typeMap = {
-    "ASPHEREOBD": RawLogItemType.Initializer,
-    "RTCOLDTIME": RawLogItemType.TimeUpdateBefore,
-    "RTCNEWTIME": RawLogItemType.TimeUpdateAfter,
-    "RTLATITUDE": RawLogItemType.Latitude,
-    "RTLONGITUD": RawLogItemType.Longitude,
-    "GPSSPEEDKM": RawLogItemType.GPSSpeed,
-    "GPSVCOURSE": RawLogItemType.GPSCourse,
-    "CARECUINIT": RawLogItemType.EcuInitialization,
-    "BATVOLTAGE": RawLogItemType.BatteryVoltage,
-    "ENGINETEMP": RawLogItemType.EngineTemperature,
-    "VEHICLERPM": RawLogItemType.EngineRPM,
-    "VEHICSPEED": RawLogItemType.Speed,
-    "ENGAIRFLOW": RawLogItemType.Airflow,
-    "ENTHROTTLE": RawLogItemType.ThrottlePosition
+    'ASPHEREOBD': RawLogItemType.Initializer,
+    'RTCOLDTIME': RawLogItemType.TimeUpdateBefore,
+    'RTCNEWTIME': RawLogItemType.TimeUpdateAfter,
+    'RTLATITUDE': RawLogItemType.Latitude,
+    'RTLONGITUD': RawLogItemType.Longitude,
+    'GPSSPEEDKM': RawLogItemType.GPSSpeed,
+    'GPSVCOURSE': RawLogItemType.GPSCourse,
+    'CARECUINIT': RawLogItemType.EcuInitialization,
+    'BATVOLTAGE': RawLogItemType.BatteryVoltage,
+    'ENGINETEMP': RawLogItemType.EngineTemperature,
+    'VEHICLERPM': RawLogItemType.EngineRPM,
+    'VEHICSPEED': RawLogItemType.Speed,
+    'ENGAIRFLOW': RawLogItemType.Airflow,
+    'ENTHROTTLE': RawLogItemType.ThrottlePosition
   };
 
   /// Date and time of the log line.

@@ -13,6 +13,7 @@ const int HIVE_FUEL_ADAPTER_ID = 2;
 const int HIVE_RAW_LOG_ITEM_ADAPTER_ID = 3;
 const int HIVE_LOG_SESSION_ADAPTER_ID = 4;
 const int HIVE_RAW_TIMED_ITEM_ADAPTER_ID = 5;
+const int HIVE_REMOTE_FILE_ADAPTER_ID = 6;
 
 StoredSettings appSettings;
 OBDScanner globalScanner;

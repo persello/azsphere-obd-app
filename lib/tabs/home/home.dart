@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:azsphere_obd_app/classes/device.dart';
+import 'package:azsphere_obd_app/classes/fuel.dart';
 import 'package:azsphere_obd_app/classes/vehicle.dart';
 import 'package:azsphere_obd_app/customcontrols.dart';
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
@@ -41,17 +42,17 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   void pollScannerProperties(OBDScanner scanner) {
-    logger.v('Polling real-time properties from scanner.');
-    scanner.sendMessage(TCPMessage(header: MessageHeader_SDSize));
-    scanner.sendMessage(TCPMessage(header: MessageHeader_SDMounted));
+    if (!car.downloadingFileContent) {
+      logger.v('Polling real-time properties from scanner.');
+      scanner.sendMessage(TCPMessage(header: MessageHeader_SDSize));
+      scanner.sendMessage(TCPMessage(header: MessageHeader_SDMounted));
+    }
   }
 
   /// Called when the current scanner instance changes its connection status
-  void scannerConnectionChanged(
-      OBDScanner scanner, OBDScannerConnectionStatus status) async {
+  void scannerConnectionChanged(OBDScanner scanner, OBDScannerConnectionStatus status) async {
     // Scanner found during search
-    if (status == OBDScannerConnectionStatus.STATUS_CONNECTED &&
-        searchingForScanner) {
+    if (status == OBDScannerConnectionStatus.STATUS_CONNECTED && searchingForScanner) {
       logger.i('Device found at address ${scanner.ipAddress}.');
 
       // This also updates the globalScanner indicator
@@ -84,7 +85,7 @@ class _HomeTabState extends State<HomeTab> {
         globalScanner?.status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
       // Every five addresses try last successful IP
       if (lastIpByteTried % 5 == 0 && !lastScanWasDefaultIp) {
-        scanner.restoreLastIpAddress();
+        await scanner.restoreLastIpAddress();
         scanner.connect();
         lastScanWasDefaultIp = true;
       } else {
@@ -107,8 +108,7 @@ class _HomeTabState extends State<HomeTab> {
       }
 
       // Device disconnected after search
-    } else if (status == OBDScannerConnectionStatus.STATUS_DISCONNECTED &&
-        !searchingForScanner) {
+    } else if (status == OBDScannerConnectionStatus.STATUS_DISCONNECTED && !searchingForScanner) {
       logger.w('Restarting scan after disconnection or not found.');
 
       // Stop the poll timer
@@ -116,6 +116,7 @@ class _HomeTabState extends State<HomeTab> {
 
       // Come on, let's search again (like you did last summer)
       setState(() {
+        globalScanner = globalScanner;
         searchingForScanner = false;
       });
 
@@ -125,14 +126,15 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   void searchScanner() async {
+    // TODO: Catch exception on mobile network
+
     myIp = (await Wifi.ip) ?? '';
 
     setState(() {
       isWiFiConnected = myIp.startsWith('192.168');
     });
 
-    if (isWiFiConnected &&
-        globalScanner?.status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
+    if (isWiFiConnected && globalScanner?.status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
       logger.d('My IP is $myIp.');
       logger.d('Wi-Fi network is ${isWiFiConnected ? "" : "not "}connected.');
 
@@ -144,7 +146,9 @@ class _HomeTabState extends State<HomeTab> {
       // Get last successful IP from settings
       OBDScanner scanner = new OBDScanner();
 
-      scanner.restoreLastIpAddress();
+      await scanner.restoreLastIpAddress();
+
+      // TODO: Not restored
 
       logger.d('The last IP of the device was ${scanner.ipAddress}.');
 
@@ -160,9 +164,14 @@ class _HomeTabState extends State<HomeTab> {
   void getCarFromMemory() async {
     logger.i('Getting car properties from storage.');
     Vehicle x = new Vehicle();
-    x = await x.restore();
+    car = await x.restore();
     setState(() {
-      car = x;
+      car = car;
+
+      // CommonFuel index
+      if (car.fuel.name == null) {
+        car.fuel = CommonFuels.undefined;
+      }
     });
   }
 
@@ -228,20 +237,16 @@ class _HomeTabState extends State<HomeTab> {
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 4),
                                 child: ClipRRect(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(20)),
+                                  borderRadius: BorderRadius.all(Radius.circular(20)),
                                   child: Container(
                                     height: 12,
                                     width: 12,
                                     color: isWiFiConnected
                                         ? ((globalScanner?.status ??
-                                                    OBDScannerConnectionStatus
-                                                        .STATUS_DISCONNECTED) ==
-                                                OBDScannerConnectionStatus
-                                                    .STATUS_CONNECTED
+                                                    OBDScannerConnectionStatus.STATUS_DISCONNECTED) ==
+                                                OBDScannerConnectionStatus.STATUS_CONNECTED
                                             ? CustomCupertinoColors.systemGreen
-                                            : CustomCupertinoColors
-                                                .systemYellow)
+                                            : CustomCupertinoColors.systemYellow)
                                         : CustomCupertinoColors.systemRed,
                                   ),
                                 ),
@@ -287,16 +292,13 @@ class _HomeTabState extends State<HomeTab> {
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 4),
                                 child: ClipRRect(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(20)),
+                                  borderRadius: BorderRadius.all(Radius.circular(20)),
                                   child: Container(
                                     height: 12,
                                     width: 12,
                                     color: ((globalScanner?.status ??
-                                                OBDScannerConnectionStatus
-                                                    .STATUS_DISCONNECTED) ==
-                                            OBDScannerConnectionStatus
-                                                .STATUS_CONNECTED)
+                                                OBDScannerConnectionStatus.STATUS_DISCONNECTED) ==
+                                            OBDScannerConnectionStatus.STATUS_CONNECTED)
                                         ? CustomCupertinoColors.systemYellow
                                         : CustomCupertinoColors.systemRed,
                                   ),
@@ -345,8 +347,7 @@ class _HomeTabState extends State<HomeTab> {
                     Container(
                       width: 200,
                       child: Text(
-                        globalScanner?.status ==
-                                OBDScannerConnectionStatus.STATUS_CONNECTED
+                        globalScanner?.status == OBDScannerConnectionStatus.STATUS_CONNECTED
                             ? globalScanner?.sdCardMounted ?? 0
                                 ? 'Your data uses 0.15 GB out of ${OBDScanner.byteSizeToString(1024 * globalScanner?.sdCardSize ?? 0)} available in the card.'
                                 : 'Please insert a FAT or exFAT microSD card in the slot.'
@@ -416,17 +417,20 @@ class _HomeTabState extends State<HomeTab> {
                             padding: EdgeInsets.symmetric(vertical: 20),
                             height: 100,
 
-                            // TODO: Ask user to press B button or to turn ignition off to get this trip's data (when indicator is green).
+                            // TODO: IMPLEMENT IN FIRMWARE: Ask user to press B button or to turn ignition off to get this trip's data (when indicator is green).
                             // Do not use while driving.
                             // During sync, no data will be saved if you're driving.
                             child: CupertinoButton(
                               child: Text('Sync now'),
-                              onPressed: globalScanner?.status ==
-                                      OBDScannerConnectionStatus
-                                          .STATUS_CONNECTED
+                              onPressed: globalScanner?.status == OBDScannerConnectionStatus.STATUS_CONNECTED
                                   ? () {
                                       // Start sync
                                       logger.i('Sync button pressed.');
+                                      car.getRemoteLogs();
+
+                                      // TODO: Save car data after elaboration.
+
+                                      // car.save();
                                     }
                                   : null,
                             ),
@@ -455,8 +459,7 @@ class _HomeTabState extends State<HomeTab> {
                       children: <Widget>[
                         // Image
                         Padding(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
@@ -465,8 +468,7 @@ class _HomeTabState extends State<HomeTab> {
                               width: 80,
                               child: (car.imagePath == null
                                   ? Icon(CupertinoIcons.photo_camera_solid,
-                                      size: 40,
-                                      color: CustomCupertinoColors.systemGray4)
+                                      size: 40, color: CustomCupertinoColors.systemGray4)
                                   : FittedBox(
                                       child: Image.file(File(car.imagePath)),
                                       fit: BoxFit.cover,
@@ -480,21 +482,15 @@ class _HomeTabState extends State<HomeTab> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              (car.brand == '')
-                                  ? 'Unknown brand'
-                                  : car.brand ?? 'Unknown brand',
+                              (car.brand == '') ? 'Unknown brand' : car.brand ?? 'Unknown brand',
                               style: CustomCupertinoTextStyles.blackStyle,
                             ),
                             Text(
-                              (car.model == '')
-                                  ? 'Unknown model'
-                                  : car.model ?? 'Unknown model',
+                              (car.model == '') ? 'Unknown model' : car.model ?? 'Unknown model',
                               style: CustomCupertinoTextStyles.blackStyle,
                             ),
                             Text(
-                              (car.vin == '')
-                                  ? 'Unknown VIN'
-                                  : car.vin ?? 'Unknown VIN',
+                              (car.vin == '') ? 'Unknown VIN' : car.vin ?? 'Unknown VIN',
                               style: CustomCupertinoTextStyles.secondaryStyle,
                             ),
                           ],
