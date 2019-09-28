@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math' as Math;
 
 import 'package:azsphere_obd_app/globals.dart';
+import 'package:azsphere_obd_app/classes/vehicle.dart';
 import 'package:hive/hive.dart';
 
 const String MessageHeader_Ping = 'PING';
@@ -42,7 +43,7 @@ class TCPMessage {
 
   @override
   String toString() {
-    return (this.header ?? '') + (this.arguments ?? '');
+    return (this.header ?? '') + (this.arguments ?? '') + '\r\n';
   }
 }
 
@@ -82,6 +83,12 @@ class OBDScanner {
   /// If the response is received after the following ping request, the connection is closed automatically.
   bool _pingResponsePending = false;
 
+  /// Indicates whether to expect file contents between messages.
+  bool _fileDownloading = false;
+
+  /// The file that is currently being downloaded.
+  RemoteFile _currentFile = new RemoteFile();
+
   /// Callback function for connection changed events.
   Function(OBDScanner, OBDScannerConnectionStatus) onConnectionChanged;
 
@@ -93,6 +100,15 @@ class OBDScanner {
 
   /// Callback function for button B press event (on board).
   Function(OBDScanner) onButtonBPressed;
+
+  /// Callback function for last file number receiver.
+  Function(OBDScanner, int) onLastFileNumberReceived;
+
+  /// Callback function for file size receiver.
+  Function(OBDScanner, String, int) onFileSizeReceived;
+
+  /// Callback function for file content receiver.
+  Function(OBDScanner, RemoteFile) onFileContentReceived;
 
   /// The raw TCP receive buffer. Simply an unprocessed result of a stream of characters.
   StringBuffer _receiveBuffer = new StringBuffer();
@@ -199,18 +215,33 @@ class OBDScanner {
   /// awaiting for a response. The response will be parsed by the interpreter which
   /// will also update the [lastSuccesfulPing] variable.
   void _ping() {
-    if (!_pingResponsePending) {
+    if (DateTime.now().difference(lastSuccessfulPing ?? DateTime.now()) > new Duration(seconds: 5)) {
+      closeConnection();
+    } else {
       TCPMessage message = TCPMessage.fromString(MessageHeader_Ping);
       sendMessage(message);
-      _pingResponsePending = true;
-    } else {
-      closeConnection();
     }
   }
 
   /// Sends a [TCPMessage] object after converting it to a string and adding a trailing \r\n
   void sendMessage(TCPMessage message) {
+    try {
     this._socket.write(message.header + (message.arguments ?? '') + '\r\n');
+    } catch (ex) {
+      closeConnection();
+    }
+  }
+
+  void requestLastFileNumber() {
+    this.sendMessage(new TCPMessage(header: MessageHeader_LastFileName));
+  }
+
+  void requestFileSize(int fileNumber) {
+    this.sendMessage(new TCPMessage(header: MessageHeader_GetFileSize, arguments: '$fileNumber.log'));
+  }
+
+  void requestFileContent(int fileNumber) {
+    this.sendMessage(new TCPMessage(header: MessageHeader_GetFileContent, arguments: '$fileNumber.log'));
   }
 
   /// Called when all the operations on the socket are complete and it should be closed.
@@ -250,6 +281,7 @@ class OBDScanner {
   /// as an argument.
   void _newTCPData(data) {
     // logger.v('New TCP data received (${new String.fromCharCodes(data)}).');
+    lastSuccessfulPing = DateTime.now();
 
     // First, we update the ping time because our device is connected
     _pingResponsePending = false;
@@ -258,7 +290,8 @@ class OBDScanner {
     String received = new String.fromCharCodes(data);
 
     // Then, if the value corresponds to an initialization message, we change the connection status if not already done.
-    if ((status == OBDScannerConnectionStatus.STATUS_UNKNOWN || status == OBDScannerConnectionStatus.STATUS_DISCONNECTED) &&
+    if ((status == OBDScannerConnectionStatus.STATUS_UNKNOWN ||
+            status == OBDScannerConnectionStatus.STATUS_DISCONNECTED) &&
         received.startsWith('Azure Sphere OBD Scanner')) {
       logger.i('Device recognized by header.');
       status = OBDScannerConnectionStatus.STATUS_CONNECTED;
@@ -289,7 +322,7 @@ class OBDScanner {
       // We create a message with the extracted part...
       TCPMessage message = TCPMessage.fromString(currentMessageString);
 
-      parse(message);
+      parse(message, currentMessageString + '\r');
       if (onMessageReceived != null) onMessageReceived(this, message);
     }
   }
@@ -297,17 +330,13 @@ class OBDScanner {
   /// Filters messages such as ping because are not useful for the user.
   ///
   /// Returns true if filtered, false if not.
-  bool parse(TCPMessage message) {
+  bool parse(TCPMessage message, String rawData) {
     bool ret = true;
 
     // logger.v('Parsing new message');
 
     switch (message.header) {
       case MessageHeader_Ping:
-        // Not only here anymore: every piece of data serves as ping, so it works even during file transfer
-
-        lastSuccessfulPing = DateTime.now();
-
         // Changing status from disconnected to connected is only allowed with a PING response or with a header,
         // otherwise other devices might be recognised as scanners.
         if (status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
@@ -457,8 +486,63 @@ class OBDScanner {
         // SDSZXXXXXXXXXXXX X = size in kB
         sdCardSize = int.parse(message.arguments);
         break;
+      case MessageHeader_LastFileName:
+        if (onLastFileNumberReceived != null) {
+          onLastFileNumberReceived(
+              this,
+              message.arguments.startsWith('O')
+                  ? int.tryParse(message.arguments.split('.')[0].substring(1)) ?? 0
+                  : 0);
+        }
+        break;
+      case MessageHeader_GetFileSize:
+        if (onFileSizeReceived != null) {
+          onFileSizeReceived(this, message.arguments.split('#')[0].substring(1),
+              int.tryParse(message.arguments.split('#')[1] ?? 0));
+        }
+        break;
+      case MessageHeader_GetFileContent:
+        switch (message.arguments[0]) {
+          case 'S':
+            // Beginning of transmission
+
+            // Reset file
+            _currentFile
+              ..content = ''
+              ..downloadedBytes = 0
+              ..name = message.arguments.substring(1);
+
+            // Get size from list of known files
+            for (RemoteFile f in car.knownFiles) {
+              if (f.name == _currentFile.name) {
+                _currentFile.size = f.size;
+              }
+            }
+
+            _fileDownloading = true;
+            break;
+          case 'E':
+          // End of transmission
+          case 'O':
+            // Error while reading (beginning)
+            _fileDownloading = false;
+            if (onFileContentReceived != null) onFileContentReceived(this, _currentFile);
+            break;
+        }
+        break;
       default:
-        ret = false;
+
+        // If a download is in progress...
+        if (_fileDownloading) {
+          // Add raw data to current file if it is not a command.
+          _currentFile.content += rawData;
+          _currentFile.downloadedBytes += rawData.length;
+          // logger.v('File length: ${_currentFile.downloadedBytes}.');
+          ret = true;
+        } else {
+          ret = false;
+        }
+        break;
     }
     return ret;
   }

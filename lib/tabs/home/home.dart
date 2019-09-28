@@ -32,21 +32,25 @@ class _HomeTabState extends State<HomeTab> {
   bool lastScanWasDefaultIp = false;
   Timer rtDataTimer;
 
-  void newDataFromScanner(OBDScanner scanner, TCPMessage message) {
-    logger.v('Updating UI with new data from scanner.');
+  double syncProgress = 0;
 
-    // Just update the UI data taken from the globalScanner object
-    setState(() {
-      globalScanner = scanner;
-    });
+  // TODO: Create a list of pollable messages
+
+  void newDataFromScanner(OBDScanner scanner, TCPMessage message) {
+    if (message.header == MessageHeader_SDSize || message.header == MessageHeader_SDMounted) {
+      logger.v('Updating UI with new data from scanner.');
+
+      // Just update the UI data taken from the globalScanner object
+      setState(() {
+        globalScanner = scanner;
+      });
+    }
   }
 
   void pollScannerProperties(OBDScanner scanner) {
-    if (!car.downloadingFileContent) {
-      logger.v('Polling real-time properties from scanner.');
-      scanner.sendMessage(TCPMessage(header: MessageHeader_SDSize));
-      scanner.sendMessage(TCPMessage(header: MessageHeader_SDMounted));
-    }
+    logger.v('Polling real-time properties from scanner.');
+    scanner.sendMessage(TCPMessage(header: MessageHeader_SDSize));
+    scanner.sendMessage(TCPMessage(header: MessageHeader_SDMounted));
   }
 
   /// Called when the current scanner instance changes its connection status
@@ -75,6 +79,8 @@ class _HomeTabState extends State<HomeTab> {
       globalScanner.onMessageReceived = newDataFromScanner;
 
       // Start the timer that polls the real-time data that the UI should display
+      pollScannerProperties(globalScanner);
+
       rtDataTimer = new Timer.periodic(Duration(seconds: 5), (timer) {
         pollScannerProperties(globalScanner);
       });
@@ -108,8 +114,13 @@ class _HomeTabState extends State<HomeTab> {
       }
 
       // Device disconnected after search
-    } else if (status == OBDScannerConnectionStatus.STATUS_DISCONNECTED && !searchingForScanner) {
+    } else if (status == OBDScannerConnectionStatus.STATUS_DISCONNECTED &&
+        !searchingForScanner &&
+        scanner == globalScanner) {
       logger.w('Restarting scan after disconnection or not found.');
+
+      // Not syncing anymore
+      syncInProgress = false;
 
       // Stop the poll timer
       rtDataTimer?.cancel();
@@ -117,7 +128,7 @@ class _HomeTabState extends State<HomeTab> {
       // Come on, let's search again (like you did last summer)
       setState(() {
         globalScanner = globalScanner;
-        searchingForScanner = false;
+        searchingForScanner = true;
       });
 
       // Yeah, let's search again (like you did last year)
@@ -167,6 +178,7 @@ class _HomeTabState extends State<HomeTab> {
     car = await x.restore();
     setState(() {
       car = car;
+      car.onDownloadProgressUpdate = downloadProgressReceived;
 
       // CommonFuel index
       if (car.fuel.name == null) {
@@ -182,6 +194,12 @@ class _HomeTabState extends State<HomeTab> {
     // Update car object
     getCarFromMemory();
     super.initState();
+  }
+
+  void downloadProgressReceived(double progress) {
+    setState(() {
+     syncProgress = progress; 
+    });
   }
 
   @override
@@ -369,7 +387,7 @@ class _HomeTabState extends State<HomeTab> {
                 ),
 
                 // Sync status: syncing
-                if (syncInProgress)
+                if (syncInProgress && globalScanner.status == OBDScannerConnectionStatus.STATUS_CONNECTED)
                   ListButton(
                     padding: EdgeInsets.symmetric(horizontal: 30),
                     onPressed: () {
@@ -391,14 +409,14 @@ class _HomeTabState extends State<HomeTab> {
                         child: CircleProgressBar(
                           backgroundColor: CustomCupertinoColors.systemGray5,
                           foregroundColor: CustomCupertinoColors.systemYellow,
-                          value: .68,
+                          value: syncProgress,
                         ),
                       ),
                     ],
                   ),
 
-                // Sync status: synced
-                if (!syncInProgress)
+                // Sync status: synced (or device disconnected)
+                if (!syncInProgress || globalScanner.status != OBDScannerConnectionStatus.STATUS_CONNECTED)
                   GenericListItem(
                     isLast: true,
                     child: Padding(
@@ -422,17 +440,22 @@ class _HomeTabState extends State<HomeTab> {
                             // During sync, no data will be saved if you're driving.
                             child: CupertinoButton(
                               child: Text('Sync now'),
-                              onPressed: globalScanner?.status == OBDScannerConnectionStatus.STATUS_CONNECTED
-                                  ? () {
-                                      // Start sync
-                                      logger.i('Sync button pressed.');
-                                      car.getRemoteLogs();
+                              onPressed:
+                                  (globalScanner?.status == OBDScannerConnectionStatus.STATUS_CONNECTED &&
+                                          (globalScanner?.sdCardMounted ?? false))
+                                      ? () {
+                                          // Start sync
+                                          logger.i('Sync button pressed.');
 
-                                      // TODO: Save car data after elaboration.
+                                          car.askRemoteLogs();
 
-                                      // car.save();
-                                    }
-                                  : null,
+                                          syncInProgress = true;
+
+                                          // TODO: Save car data after elaboration.
+
+                                          // car.save();
+                                        }
+                                      : null,
                             ),
                           ),
                         ],
