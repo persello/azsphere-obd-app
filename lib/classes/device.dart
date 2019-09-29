@@ -215,18 +215,30 @@ class OBDScanner {
   /// awaiting for a response. The response will be parsed by the interpreter which
   /// will also update the [lastSuccesfulPing] variable.
   void _ping() {
-    if (DateTime.now().difference(lastSuccessfulPing ?? DateTime.now()) > new Duration(seconds: 5)) {
+    // If the last successful ping time is unknown, rely on last ping answer pending state.
+    if (lastSuccessfulPing == null) {
+      if (_pingResponsePending) {
+        // Set it to -5 minutes so it fails
+        lastSuccessfulPing = DateTime.now().subtract(new Duration(minutes: 5));
+      } else {
+        // Set it to now so it passes the next check
+        lastSuccessfulPing = DateTime.now();
+      }
+    }
+
+    if (DateTime.now().difference(lastSuccessfulPing) > new Duration(seconds: 5)) {
       closeConnection();
     } else {
       TCPMessage message = TCPMessage.fromString(MessageHeader_Ping);
       sendMessage(message);
+      _pingResponsePending = true;
     }
   }
 
   /// Sends a [TCPMessage] object after converting it to a string and adding a trailing \r\n
   void sendMessage(TCPMessage message) {
     try {
-    this._socket.write(message.header + (message.arguments ?? '') + '\r\n');
+      this._socket.write(message.header + (message.arguments ?? '') + '\r\n');
     } catch (ex) {
       closeConnection();
     }
@@ -266,6 +278,10 @@ class OBDScanner {
     if (_socket != null) {
       _socket.destroy();
     }
+
+    // Reset parameters
+    sdCardSize = 0;
+    sdCardMounted = false;
 
     // In order to allow reconnection
     _pingResponsePending = false;

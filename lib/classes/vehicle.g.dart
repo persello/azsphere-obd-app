@@ -52,21 +52,28 @@ class RemoteFileAdapter extends TypeAdapter<RemoteFile> {
     var fields = <int, dynamic>{
       for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return RemoteFile()
-      ..name = fields[0] as String
-      ..size = fields[1] as int
-      ..downloadedBytes = fields[2] as int;
+    return RemoteFile(
+      name: fields[0] as String,
+      size: fields[1] as int,
+    )
+      ..downloadedBytes = fields[2] as int
+      ..parsed = fields[3] as bool
+      ..content = fields[4] as String;
   }
 
   @override
   void write(BinaryWriter writer, RemoteFile obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
       ..write(obj.size)
       ..writeByte(2)
-      ..write(obj.downloadedBytes);
+      ..write(obj.downloadedBytes)
+      ..writeByte(3)
+      ..write(obj.parsed)
+      ..writeByte(4)
+      ..write(obj.content);
   }
 }

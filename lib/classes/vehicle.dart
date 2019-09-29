@@ -57,6 +57,8 @@ class Vehicle {
   void askRemoteLogs() {
     logger.i('Starting download process.');
 
+    if (onDownloadProgressUpdate != null) onDownloadProgressUpdate(0);
+
     // Step 1: Get last file name.
     globalScanner.onLastFileNumberReceived = _fileNumberReceived;
     globalScanner.requestLastFileNumber();
@@ -90,6 +92,7 @@ class Vehicle {
           // Same name, different size: update
           // Size is always received + 1
           f.size = fileSize == 0 ? 0 : fileSize + 1;
+          f.content = '';
           _fileMatchCounter = 0;
         }
         found = true;
@@ -179,11 +182,24 @@ class Vehicle {
         break;
       }
     }
+
     if (nextFileNumber != null) {
       logger.v('Asking $nextFileNumber.log\'s contents.');
       globalScanner.requestFileContent(nextFileNumber);
     } else {
       logger.i('Download finished.');
+
+      // Consolidate download list with knownFiles
+      for (RemoteFile source in downloadQueue) {
+        int destIndex =
+            knownFiles.indexWhere((RemoteFile f) => (f.name.toUpperCase() == source.name.toUpperCase()));
+        knownFiles[destIndex] = source;
+      }
+
+      // Save to hive
+      save();
+
+      if (onDownloadProgressUpdate != null) onDownloadProgressUpdate(1);
     }
   }
 
@@ -232,8 +248,10 @@ class RemoteFile {
   int size;
   @HiveField(2)
   int downloadedBytes = 0;
+  @HiveField(3)
+  bool parsed = false;
+  @HiveField(4)
+  String content = '';
 
   bool asked = false;
-
-  String content = '';
 }

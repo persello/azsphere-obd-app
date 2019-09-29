@@ -32,6 +32,7 @@ class _HomeTabState extends State<HomeTab> {
   bool lastScanWasDefaultIp = false;
   Timer rtDataTimer;
 
+  int currentFilesSize = 0;
   double syncProgress = 0;
 
   // TODO: Create a list of pollable messages
@@ -40,8 +41,15 @@ class _HomeTabState extends State<HomeTab> {
     if (message.header == MessageHeader_SDSize || message.header == MessageHeader_SDMounted) {
       logger.v('Updating UI with new data from scanner.');
 
+      // File sizes
+      currentFilesSize = 0;
+      for (RemoteFile f in car.knownFiles) {
+        currentFilesSize += f.size;
+      }
+
       // Just update the UI data taken from the globalScanner object
       setState(() {
+        currentFilesSize = currentFilesSize;
         globalScanner = scanner;
       });
     }
@@ -198,7 +206,11 @@ class _HomeTabState extends State<HomeTab> {
 
   void downloadProgressReceived(double progress) {
     setState(() {
-     syncProgress = progress; 
+      if (progress == 1) {
+        syncInProgress = false;
+      }
+      
+      syncProgress = progress;
     });
   }
 
@@ -367,7 +379,7 @@ class _HomeTabState extends State<HomeTab> {
                       child: Text(
                         globalScanner?.status == OBDScannerConnectionStatus.STATUS_CONNECTED
                             ? globalScanner?.sdCardMounted ?? 0
-                                ? 'Your data uses 0.15 GB out of ${OBDScanner.byteSizeToString(1024 * globalScanner?.sdCardSize ?? 0)} available in the card.'
+                                ? 'Your data uses ${OBDScanner.byteSizeToString(currentFilesSize)} out of ${OBDScanner.byteSizeToString(1024 * globalScanner?.sdCardSize ?? 0)} available in the card.'
                                 : 'Please insert a FAT or exFAT microSD card in the slot.'
                             : 'The device is disconnected.',
                         overflow: TextOverflow.fade,
@@ -380,7 +392,7 @@ class _HomeTabState extends State<HomeTab> {
                       child: CircleProgressBar(
                         backgroundColor: CustomCupertinoColors.systemGray5,
                         foregroundColor: CustomCupertinoColors.systemBlue,
-                        value: .24,
+                        value: (globalScanner?.sdCardMounted ?? false) ? currentFilesSize / (1024 * (globalScanner?.sdCardSize ?? double.infinity)) : 0,
                       ),
                     ),
                   ],
