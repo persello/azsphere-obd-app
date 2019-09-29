@@ -17,9 +17,9 @@ class MapViewSettings extends StatefulWidget {
 
   final Map<int, Widget> mapTypeChoices = const <int, Widget>{
     // 1, 4, 3 in order to match GoogleMap's MapType enum
-    1: Text("Normal"),
-    4: Text("Satellite"),
-    3: Text("Terrain")
+    1: Text('Normal'),
+    4: Text('Satellite'),
+    3: Text('Terrain')
   };
 
   @override
@@ -29,20 +29,22 @@ class MapViewSettings extends StatefulWidget {
 class _MapViewSettingsState extends State<MapViewSettings> {
   @override
   Widget build(BuildContext context) {
+    // logger.v('Building map view settings page.');
     return CupertinoPageScaffold(
       backgroundColor: CustomCupertinoColors.systemGray6,
       navigationBar: CupertinoNavigationBar(
         middle: Text(widget.title),
-        previousPageTitle: "Map",
+        previousPageTitle: 'Map',
       ),
       child: ListView(
         children: <Widget>[
           ListGroupSpacer(
-            title: "View",
+            title: 'View',
           ),
           ListSwitch(
-            title: "Show my location",
+            title: 'Show my location',
             onChanged: (bool value) {
+              logger.d('Show location setting is now $value.');
               widget.data.showMyLocation = value;
               appSettings.saveMapSettings();
             },
@@ -51,14 +53,15 @@ class _MapViewSettingsState extends State<MapViewSettings> {
           GenericListItem(
             child: CupertinoSegmentedControl<int>(
               onValueChanged: (int selectedMapType) {
+                logger.d('Selected map type is now ${MapType.values[selectedMapType]}');
                 setState(() {
-                  widget.data.mapType = MapType.values[selectedMapType];
+                  widget.data.mapType = selectedMapType;
                   appSettings.saveMapSettings();
                 });
               },
               children: widget.mapTypeChoices,
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              groupValue: widget.data.mapType.index,
+              groupValue: widget.data.mapType,
             ),
           ),
         ],

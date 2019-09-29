@@ -2,14 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:azsphere_obd_app/classes/device.dart';
+import 'package:azsphere_obd_app/classes/fuel.dart';
 import 'package:azsphere_obd_app/classes/vehicle.dart';
 import 'package:azsphere_obd_app/customcontrols.dart';
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/tabs/settings/carproperties.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:wifi/wifi.dart';
 
 import '../../globals.dart';
@@ -33,24 +32,41 @@ class _HomeTabState extends State<HomeTab> {
   bool lastScanWasDefaultIp = false;
   Timer rtDataTimer;
 
+  int currentFilesSize = 0;
+  double syncProgress = 0;
+
+  // TODO: Create a list of pollable messages
+
   void newDataFromScanner(OBDScanner scanner, TCPMessage message) {
-    // Just update the UI data taken from the globalScanner object
-    setState(() {
-      globalScanner = scanner;
-    });
+    if (message.header == MessageHeader_SDSize || message.header == MessageHeader_SDMounted) {
+      logger.v('Updating UI with new data from scanner.');
+
+      // File sizes
+      currentFilesSize = 0;
+      for (RemoteFile f in car.knownFiles) {
+        currentFilesSize += f.size;
+      }
+
+      // Just update the UI data taken from the globalScanner object
+      setState(() {
+        currentFilesSize = currentFilesSize;
+        globalScanner = scanner;
+      });
+    }
   }
 
   void pollScannerProperties(OBDScanner scanner) {
+    logger.v('Polling real-time properties from scanner.');
     scanner.sendMessage(TCPMessage(header: MessageHeader_SDSize));
     scanner.sendMessage(TCPMessage(header: MessageHeader_SDMounted));
   }
 
   /// Called when the current scanner instance changes its connection status
-  void scannerConnectionChanged(
-      OBDScanner scanner, OBDScannerConnectionStatus status) async {
+  void scannerConnectionChanged(OBDScanner scanner, OBDScannerConnectionStatus status) async {
     // Scanner found during search
-    if (status == OBDScannerConnectionStatus.STATUS_CONNECTED &&
-        searchingForScanner) {
+    if (status == OBDScannerConnectionStatus.STATUS_CONNECTED && searchingForScanner) {
+      logger.i('Device found at address ${scanner.ipAddress}.');
+
       // This also updates the globalScanner indicator
       setState(() {
         // Stop eventual connection indicators
@@ -58,7 +74,7 @@ class _HomeTabState extends State<HomeTab> {
       });
 
       // We are now connected, let's save the IP address
-      StoredSettings.saveIp(scanner.ipAddress);
+      scanner.saveIpAddress();
 
       // Make it global
       globalScanner = scanner;
@@ -71,6 +87,8 @@ class _HomeTabState extends State<HomeTab> {
       globalScanner.onMessageReceived = newDataFromScanner;
 
       // Start the timer that polls the real-time data that the UI should display
+      pollScannerProperties(globalScanner);
+
       rtDataTimer = new Timer.periodic(Duration(seconds: 5), (timer) {
         pollScannerProperties(globalScanner);
       });
@@ -81,7 +99,7 @@ class _HomeTabState extends State<HomeTab> {
         globalScanner?.status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
       // Every five addresses try last successful IP
       if (lastIpByteTried % 5 == 0 && !lastScanWasDefaultIp) {
-        scanner.ipAddress = await StoredSettings.restoreIp();
+        await scanner.restoreLastIpAddress();
         scanner.connect();
         lastScanWasDefaultIp = true;
       } else {
@@ -95,6 +113,7 @@ class _HomeTabState extends State<HomeTab> {
         if (lastIpByteTried == 255) {
           lastIpByteTried = 0;
           searchingForScanner = false;
+          logger.w('Scanned every address of the subnet. No devices found.');
         } else {
           lastIpByteTried++;
         }
@@ -104,14 +123,21 @@ class _HomeTabState extends State<HomeTab> {
 
       // Device disconnected after search
     } else if (status == OBDScannerConnectionStatus.STATUS_DISCONNECTED &&
-        !searchingForScanner) {
-      // Come on, let's search again (like you did last summer)
-      setState(() {
-        searchingForScanner = false;
-      });
+        !searchingForScanner &&
+        scanner == globalScanner) {
+      logger.w('Restarting scan after disconnection or not found.');
+
+      // Not syncing anymore
+      syncInProgress = false;
 
       // Stop the poll timer
       rtDataTimer?.cancel();
+
+      // Come on, let's search again (like you did last summer)
+      setState(() {
+        globalScanner = globalScanner;
+        searchingForScanner = true;
+      });
 
       // Yeah, let's search again (like you did last year)
       searchScanner();
@@ -119,21 +145,31 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   void searchScanner() async {
+    // TODO: Catch exception on mobile network
+
     myIp = (await Wifi.ip) ?? '';
 
     setState(() {
       isWiFiConnected = myIp.startsWith('192.168');
     });
 
-    if (isWiFiConnected &&
-        globalScanner?.status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
+    if (isWiFiConnected && globalScanner?.status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
+      logger.d('My IP is $myIp.');
+      logger.d('Wi-Fi network is ${isWiFiConnected ? "" : "not "}connected.');
+
+      logger.i('Scanner is not connected, starting to search.');
+
       // Update
       searchingForScanner = true;
 
       // Get last successful IP from settings
-      String lastSuccessfulIp = await StoredSettings.restoreIp();
+      OBDScanner scanner = new OBDScanner();
 
-      OBDScanner scanner = new OBDScanner(ipAddress: lastSuccessfulIp);
+      await scanner.restoreLastIpAddress();
+
+      // TODO: Not restored
+
+      logger.d('The last IP of the device was ${scanner.ipAddress}.');
 
       // Try the first connection
       scanner.onConnectionChanged = scannerConnectionChanged;
@@ -145,21 +181,43 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   void getCarFromMemory() async {
-    Vehicle x = await Vehicle.restore();
+    logger.i('Getting car properties from storage.');
+    Vehicle x = new Vehicle();
+    car = await x.restore();
     setState(() {
-      car = x;
+      car = car;
+      car.onDownloadProgressUpdate = downloadProgressReceived;
+
+      // CommonFuel index
+      if (car.fuel.name == null) {
+        car.fuel = CommonFuels.undefined;
+      }
     });
   }
 
   @override
   void initState() {
+    logger.v('Home page is being initialized.');
+
     // Update car object
     getCarFromMemory();
     super.initState();
   }
 
+  void downloadProgressReceived(double progress) {
+    setState(() {
+      if (progress == 1) {
+        syncInProgress = false;
+      }
+      
+      syncProgress = progress;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // logger.v('Building home page.');
+
     if (!searchingForScanner) searchScanner();
 
     return CupertinoPageScaffold(
@@ -170,7 +228,7 @@ class _HomeTabState extends State<HomeTab> {
           SliverFillRemaining(
             child: Column(
               children: <Widget>[
-                ListGroupSpacer(title: "Connection status"),
+                ListGroupSpacer(title: 'Connection status'),
 
                 // Connection indicator (car: yellow has voltage, green is connected)
                 GenericListItem(
@@ -190,7 +248,7 @@ class _HomeTabState extends State<HomeTab> {
                                 color: CustomCupertinoColors.black,
                               ),
                             ),
-                            Text("Phone"),
+                            Text('Phone'),
                           ],
                         ),
                       ),
@@ -209,20 +267,16 @@ class _HomeTabState extends State<HomeTab> {
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 4),
                                 child: ClipRRect(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(20)),
+                                  borderRadius: BorderRadius.all(Radius.circular(20)),
                                   child: Container(
                                     height: 12,
                                     width: 12,
                                     color: isWiFiConnected
                                         ? ((globalScanner?.status ??
-                                                    OBDScannerConnectionStatus
-                                                        .STATUS_DISCONNECTED) ==
-                                                OBDScannerConnectionStatus
-                                                    .STATUS_CONNECTED
+                                                    OBDScannerConnectionStatus.STATUS_DISCONNECTED) ==
+                                                OBDScannerConnectionStatus.STATUS_CONNECTED
                                             ? CustomCupertinoColors.systemGreen
-                                            : CustomCupertinoColors
-                                                .systemYellow)
+                                            : CustomCupertinoColors.systemYellow)
                                         : CustomCupertinoColors.systemRed,
                                   ),
                                 ),
@@ -249,7 +303,7 @@ class _HomeTabState extends State<HomeTab> {
                                 color: CustomCupertinoColors.black,
                               ),
                             ),
-                            Text("Logger"),
+                            Text('Logger'),
                           ],
                         ),
                       ),
@@ -268,16 +322,13 @@ class _HomeTabState extends State<HomeTab> {
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 4),
                                 child: ClipRRect(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(20)),
+                                  borderRadius: BorderRadius.all(Radius.circular(20)),
                                   child: Container(
                                     height: 12,
                                     width: 12,
                                     color: ((globalScanner?.status ??
-                                                OBDScannerConnectionStatus
-                                                    .STATUS_DISCONNECTED) ==
-                                            OBDScannerConnectionStatus
-                                                .STATUS_CONNECTED)
+                                                OBDScannerConnectionStatus.STATUS_DISCONNECTED) ==
+                                            OBDScannerConnectionStatus.STATUS_CONNECTED)
                                         ? CustomCupertinoColors.systemYellow
                                         : CustomCupertinoColors.systemRed,
                                   ),
@@ -306,7 +357,7 @@ class _HomeTabState extends State<HomeTab> {
                                 color: CustomCupertinoColors.black,
                               ),
                             ),
-                            Text("Car"),
+                            Text('Car'),
                           ],
                         ),
                       ),
@@ -314,22 +365,23 @@ class _HomeTabState extends State<HomeTab> {
                   ),
                 ),
 
-                ListGroupSpacer(title: "Data storage"),
+                ListGroupSpacer(title: 'Data storage'),
 
                 // Available memory on the SD card
                 ListButton(
                   padding: EdgeInsets.symmetric(horizontal: 30),
-                  onPressed: () {},
+                  onPressed: () {
+                    logger.i('Opening "GIVE THIS PAGE A NAME" page.');
+                  },
                   children: <Widget>[
                     Container(
                       width: 200,
                       child: Text(
-                        globalScanner?.status ==
-                                OBDScannerConnectionStatus.STATUS_CONNECTED
+                        globalScanner?.status == OBDScannerConnectionStatus.STATUS_CONNECTED
                             ? globalScanner?.sdCardMounted ?? 0
-                                ? "Your data uses 0.15 GB out of ${OBDScanner.byteSizeToString(1024 * globalScanner?.sdCardSize ?? 0)} available in the card."
-                                : "Please insert a FAT or exFAT microSD card in the slot."
-                            : "The device is disconnected.",
+                                ? 'Your data uses ${OBDScanner.byteSizeToString(currentFilesSize)} out of ${OBDScanner.byteSizeToString(1024 * globalScanner?.sdCardSize ?? 0)} available in the card.'
+                                : 'Please insert a FAT or exFAT microSD card in the slot.'
+                            : 'The device is disconnected.',
                         overflow: TextOverflow.fade,
                         style: CustomCupertinoTextStyles.blackStyle,
                       ),
@@ -340,23 +392,25 @@ class _HomeTabState extends State<HomeTab> {
                       child: CircleProgressBar(
                         backgroundColor: CustomCupertinoColors.systemGray5,
                         foregroundColor: CustomCupertinoColors.systemBlue,
-                        value: .24,
+                        value: (globalScanner?.sdCardMounted ?? false) ? currentFilesSize / (1024 * (globalScanner?.sdCardSize ?? double.infinity)) : 0,
                       ),
                     ),
                   ],
                 ),
 
                 // Sync status: syncing
-                if (syncInProgress)
+                if (syncInProgress && globalScanner.status == OBDScannerConnectionStatus.STATUS_CONNECTED)
                   ListButton(
                     padding: EdgeInsets.symmetric(horizontal: 30),
-                    onPressed: () {},
+                    onPressed: () {
+                      logger.i('Opening "GIVE THIS PAGE A NAME" page.');
+                    },
                     isLast: true,
                     children: <Widget>[
                       Container(
                         width: 200,
                         child: Text(
-                          "Sync in progress...\r\n01:13 remaining.",
+                          'Sync in progress...\r\n01:13 remaining.',
                           overflow: TextOverflow.fade,
                           style: CustomCupertinoTextStyles.blackStyle,
                         ),
@@ -367,14 +421,14 @@ class _HomeTabState extends State<HomeTab> {
                         child: CircleProgressBar(
                           backgroundColor: CustomCupertinoColors.systemGray5,
                           foregroundColor: CustomCupertinoColors.systemYellow,
-                          value: .68,
+                          value: syncProgress,
                         ),
                       ),
                     ],
                   ),
 
-                // Sync status: synced
-                if (!syncInProgress)
+                // Sync status: synced (or device disconnected)
+                if (!syncInProgress || globalScanner.status != OBDScannerConnectionStatus.STATUS_CONNECTED)
                   GenericListItem(
                     isLast: true,
                     child: Padding(
@@ -385,7 +439,7 @@ class _HomeTabState extends State<HomeTab> {
                           Container(
                             width: 200,
                             child: Text(
-                              "Most recent data is from yesterday, 11:30.",
+                              'Most recent data is from yesterday, 11:30.',
                               overflow: TextOverflow.fade,
                             ),
                           ),
@@ -393,18 +447,27 @@ class _HomeTabState extends State<HomeTab> {
                             padding: EdgeInsets.symmetric(vertical: 20),
                             height: 100,
 
-                            // Ask user to press B button or to turn ignition off to get this trip's data (when indicator is green).
+                            // TODO: IMPLEMENT IN FIRMWARE: Ask user to press B button or to turn ignition off to get this trip's data (when indicator is green).
                             // Do not use while driving.
                             // During sync, no data will be saved if you're driving.
                             child: CupertinoButton(
-                              child: Text("Sync now"),
-                              onPressed: globalScanner?.status ==
-                                      OBDScannerConnectionStatus
-                                          .STATUS_CONNECTED
-                                  ? () {
-                                      // Start sync
-                                    }
-                                  : null,
+                              child: Text('Sync now'),
+                              onPressed:
+                                  (globalScanner?.status == OBDScannerConnectionStatus.STATUS_CONNECTED &&
+                                          (globalScanner?.sdCardMounted ?? false))
+                                      ? () {
+                                          // Start sync
+                                          logger.i('Sync button pressed.');
+
+                                          car.askRemoteLogs();
+
+                                          syncInProgress = true;
+
+                                          // TODO: Save car data after elaboration.
+
+                                          // car.save();
+                                        }
+                                      : null,
                             ),
                           ),
                         ],
@@ -413,13 +476,14 @@ class _HomeTabState extends State<HomeTab> {
                   ),
 
                 // Car data
-                ListGroupSpacer(title: "Your car"),
+                ListGroupSpacer(title: 'Your car'),
                 ListButton(
                   onPressed: () {
+                    logger.i('Opening "Car Properties" page.');
                     Navigator.of(context, rootNavigator: true).push(
                       CupertinoPageRoute(
                         builder: (context) => SettingsCarProperties(
-                          title: "Vehicle information",
+                          title: 'Vehicle information',
                           previousTitle: widget.title,
                         ),
                       ),
@@ -430,8 +494,7 @@ class _HomeTabState extends State<HomeTab> {
                       children: <Widget>[
                         // Image
                         Padding(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
@@ -440,8 +503,7 @@ class _HomeTabState extends State<HomeTab> {
                               width: 80,
                               child: (car.imagePath == null
                                   ? Icon(CupertinoIcons.photo_camera_solid,
-                                      size: 40,
-                                      color: CustomCupertinoColors.systemGray4)
+                                      size: 40, color: CustomCupertinoColors.systemGray4)
                                   : FittedBox(
                                       child: Image.file(File(car.imagePath)),
                                       fit: BoxFit.cover,
@@ -455,21 +517,15 @@ class _HomeTabState extends State<HomeTab> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              (car.brand == '')
-                                  ? 'Unknown brand'
-                                  : car.brand ?? 'Unknown brand',
+                              (car.brand == '') ? 'Unknown brand' : car.brand ?? 'Unknown brand',
                               style: CustomCupertinoTextStyles.blackStyle,
                             ),
                             Text(
-                              (car.model == '')
-                                  ? 'Unknown model'
-                                  : car.model ?? 'Unknown model',
+                              (car.model == '') ? 'Unknown model' : car.model ?? 'Unknown model',
                               style: CustomCupertinoTextStyles.blackStyle,
                             ),
                             Text(
-                              (car.vin == '')
-                                  ? 'Unknown VIN'
-                                  : car.vin ?? 'Unknown VIN',
+                              (car.vin == '') ? 'Unknown VIN' : car.vin ?? 'Unknown VIN',
                               style: CustomCupertinoTextStyles.secondaryStyle,
                             ),
                           ],

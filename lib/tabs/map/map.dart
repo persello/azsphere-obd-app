@@ -22,24 +22,28 @@ class _MapTabState extends State<MapTab> {
 
   void _onMapCreated(GoogleMapController controller) {
     PermissionHandler().requestPermissions([PermissionGroup.location]);
+    logger.i('Permission requested.');
     _controller.complete(controller);
+    logger.v('Controller completed.');
     setState(() {
       _mapActivityIndicatorVisible = false;
     });
   }
 
   void _editMapView() {
-    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(fullscreenDialog: true, builder: (context) => MapViewSettings(title: "Map Settings", data: appSettings.mapViewSettingsData,)));
+    logger.i('Opening map view editor.');
+    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(fullscreenDialog: true, builder: (context) => MapViewSettings(title: 'Map Settings', data: appSettings.mapViewSettingsData,)));
   }
 
   @override
   Widget build(BuildContext context) {
+    // logger.v('Building map page.');
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: Text(widget.title),
         trailing: CupertinoButton(
           padding: EdgeInsets.all(10),
-          child: Text("Edit"),
+          child: Text('Edit'),
           onPressed: _editMapView,
         ),
       ),
@@ -53,7 +57,7 @@ class _MapTabState extends State<MapTab> {
             myLocationButtonEnabled: true,
             myLocationEnabled: appSettings.mapViewSettingsData.showMyLocation,
             padding: EdgeInsets.fromLTRB(0, 70, 0, 50),
-            mapType: appSettings.mapViewSettingsData.mapType,
+            mapType: MapType.values[appSettings.mapViewSettingsData.mapType],
             tiltGesturesEnabled: false,
           ),
           Center(

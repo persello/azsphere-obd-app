@@ -1,9 +1,10 @@
+import 'package:azsphere_obd_app/ioscustomcontrols.dart';
+import 'package:azsphere_obd_app/oobe/connection.dart';
+import 'package:azsphere_obd_app/tabs/settings/info.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 
-import 'package:azsphere_obd_app/ioscustomcontrols.dart';
-import 'package:azsphere_obd_app/tabs/settings/info.dart';
-import 'package:azsphere_obd_app/oobe/connection.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import '../globals.dart';
 
 /// Welcome page, the first page that appears.
 class WelcomePage extends StatefulWidget {
@@ -18,6 +19,7 @@ class WelcomePage extends StatefulWidget {
 class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
+    // logger.v('Building welcome page.');
     return CupertinoPageScaffold(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -32,7 +34,7 @@ class _WelcomePageState extends State<WelcomePage> {
             padding: EdgeInsets.only(top: 120),
           ),
           Image.asset(
-            "assets/1.png",
+            'assets/1.png',
             height: 350,
           ),
           Container(
@@ -44,13 +46,13 @@ class _WelcomePageState extends State<WelcomePage> {
               pauseAutoPlayOnTouch: Duration(seconds: 12),
               items: <Widget>[
                 Text(
-                    "Welcome to the Azure Sphere Driving Statistics app. This application allows you to continuously get some parameters from your car.",
+                    'Welcome to the Azure Sphere Driving Statistics app. This application allows you to continuously get some parameters from your car.',
                     textAlign: TextAlign.center),
                 Text(
-                    "By communicating with an OBD adapter created with an Azure Sphere Starter Kit and an OBD-2 mikroBUS™ click, the data from your car's ECU (electronic control unit) can be analyzed by this application.",
+                    'By communicating with an OBD adapter created with an Azure Sphere Starter Kit and an OBD-2 mikroBUS™ click, the data from your car\'s ECU (electronic control unit) can be analyzed by this application.',
                     textAlign: TextAlign.center),
                     Text(
-                    "By periodically downloading your data from the adapter we can show you some maps and charts with useful insights about your driving habits.",
+                    'By periodically downloading your data from the adapter we can show you some maps and charts with useful insights about your driving habits.',
                     textAlign: TextAlign.center),
               ],
             ),
@@ -62,23 +64,25 @@ class _WelcomePageState extends State<WelcomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 CupertinoButton(
-                    child: Text("About"),
+                    child: Text('About'),
                     onPressed: () {
+                      logger.i('Opening "About" page.');
                       Navigator.of(context, rootNavigator: true)
                           .push(CupertinoPageRoute(
                               builder: (context) => SettingsInfo(
-                                    title: "About",
+                                    title: 'About',
                                     previousTitle: widget.title,
                                   )));
                     }),
                 CupertinoButton(
-                  child: Text("Continue"),
+                  child: Text('Continue'),
                   color: CustomCupertinoColors.systemBlue,
                   onPressed: () {
+                    logger.i('Opening "Connect" page.');
                     Navigator.of(context, rootNavigator: true)
                         .push(CupertinoPageRoute(
                             builder: (context) => ConnectionPage(
-                                  title: "Connect",
+                                  title: 'Connect',
                                 )));
                   },
                 )

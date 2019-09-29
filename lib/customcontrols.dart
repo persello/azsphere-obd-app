@@ -19,7 +19,7 @@ class CircleProgressBar extends StatelessWidget {
   const CircleProgressBar({
     Key key,
     this.backgroundColor,
-    this.text = "",
+    this.text = '',
     @required this.foregroundColor,
     @required this.value,
   }) : super(key: key);
@@ -42,7 +42,7 @@ class CircleProgressBar extends StatelessWidget {
             backgroundColor: backgroundColor,
             foregroundColor: foregroundColor,
             percentage: this.value,
-            strokeWidth: 2),
+            strokeWidth: 4),
       ),
     );
   }
@@ -66,10 +66,8 @@ class CircleProgressBarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final Offset center = size.center(Offset.zero);
-    final Size constrainedSize =
-        size - Offset(this.strokeWidth, this.strokeWidth);
-    final shortestSide =
-        Math.min(constrainedSize.width, constrainedSize.height);
+    final Size constrainedSize = size - Offset(this.strokeWidth, this.strokeWidth);
+    final shortestSide = Math.min(constrainedSize.width, constrainedSize.height);
     final foregroundPaint = Paint()
       ..color = this.foregroundColor
       ..strokeWidth = this.strokeWidth
@@ -85,7 +83,7 @@ class CircleProgressBarPainter extends CustomPainter {
     if (this.backgroundColor != null) {
       final backgroundPaint = Paint()
         ..color = this.backgroundColor
-        ..strokeWidth = this.strokeWidth
+        ..strokeWidth = this.strokeWidth / 2
         ..style = PaintingStyle.stroke;
       canvas.drawCircle(center, radius, backgroundPaint);
     }

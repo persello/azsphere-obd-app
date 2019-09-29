@@ -1,10 +1,11 @@
+import 'package:azsphere_obd_app/ioscustomcontrols.dart';
+import 'package:azsphere_obd_app/oobe/welcome.dart';
 import 'package:azsphere_obd_app/tabs/settings/carproperties.dart';
+import 'package:azsphere_obd_app/tabs/settings/info.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:azsphere_obd_app/ioscustomcontrols.dart';
-import 'package:azsphere_obd_app/tabs/settings/info.dart';
-import 'package:azsphere_obd_app/oobe/welcome.dart';
+import '../../globals.dart';
 
 /// General settings page
 class SettingsTab extends StatefulWidget {
@@ -19,6 +20,7 @@ class SettingsTab extends StatefulWidget {
 class _SettingsTabState extends State<SettingsTab> {
   @override
   Widget build(BuildContext context) {
+    // logger.v('Building settings page.');
     return CupertinoPageScaffold(
       backgroundColor: CustomCupertinoColors.systemGray6,
       child: CustomScrollView(
@@ -29,25 +31,25 @@ class _SettingsTabState extends State<SettingsTab> {
               children: <Widget>[
                 ListGroupSpacer(),
                 ListSubMenu(
-                  text: "General",
+                  text: 'General',
                   icon: CupertinoIcons.settings_solid,
                   iconBackground: CustomCupertinoColors.systemGray,
                   onPressed: () {},
                 ),
                 ListSubMenu(
-                  text: "Connection",
+                  text: 'Connection',
                   icon: CustomCupertinoIcons.syncarrows,
                   iconBackground: CustomCupertinoColors.systemBlue,
                   onPressed: () {},
                 ),
                 ListSubMenu(
-                  text: "Device",
+                  text: 'Device',
                   icon: CupertinoIcons.car,
                   iconBackground: CustomCupertinoColors.systemOrange,
                   onPressed: () {},
                 ),
                 ListSubMenu(
-                  text: "Menu",
+                  text: 'Menu',
                   icon: CupertinoIcons.car,
                   iconBackground: CustomCupertinoColors.systemIndigo,
                   isLast: true,
@@ -55,38 +57,41 @@ class _SettingsTabState extends State<SettingsTab> {
                 ),
                 ListGroupSpacer(height: 40),
                 ListSubMenu(
-                  text: "Vehicle information",
+                  text: 'Vehicle information',
                   icon: CupertinoIcons.car,
                   iconBackground: CustomCupertinoColors.systemGreen,
                   onPressed: () {
-                    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(builder: (context) => SettingsCarProperties(title: "Vehicle information", previousTitle: "Settings")));
+                    logger.i('Opening "Vehicle information" page.');
+                    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(builder: (context) => SettingsCarProperties(title: 'Vehicle information', previousTitle: 'Settings')));
                   },
                 ),
                 ListSubMenu(
-                  text: "About",
+                  text: 'About',
                   icon: CustomCupertinoIcons.info_filled,
                   iconBackground: CustomCupertinoColors.systemTeal,
                   isLast: true,
                   onPressed: () {
+                    logger.i('Opening "About" page.');
                     Navigator.of(context, rootNavigator: true)
                         .push(CupertinoPageRoute(
                             builder: (context) => SettingsInfo(
-                                  title: "About",
+                                  title: 'About',
                                   previousTitle: widget.title,
                                 )));
                   },
                 ),
                 ListGroupSpacer(height: 40),
                 ListSubMenu(
-                  text: "INTERNAL-STARTOOBE",
+                  text: 'INTERNAL-STARTOOBE',
                   icon: CupertinoIcons.eye_solid,
                   iconBackground: CustomCupertinoColors.systemPink,
                   isLast: true,
                   onPressed: () {
+                    logger.i('Opening setup experience.');
                     Navigator.of(context, rootNavigator: true)
                         .push(CupertinoPageRoute(
                             builder: (context) => WelcomePage(
-                                  title: "Welcome",
+                                  title: 'Welcome',
                                 )));
                   },
                 )

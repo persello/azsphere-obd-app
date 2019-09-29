@@ -24,14 +24,16 @@ class SettingsInfo extends StatefulWidget {
 
 class _SettingsInfoState extends State<SettingsInfo> {
   Future<PackageInfo> _packageInfo;
-  String _version = "";
-  String _buildNumber = "";
+  String _version = '';
+  String _buildNumber = '';
 
   @override
   Widget build(BuildContext context) {
+    // logger.v('Building info page.');
     _packageInfo = widget.getPackageInfo();
     _packageInfo.then((PackageInfo pi) {
       setState(() {
+        logger.i('Package version is ${pi.version} build ${pi.buildNumber}.');
         _version = pi.version;
         _buildNumber = pi.buildNumber;
       });
@@ -47,10 +49,10 @@ class _SettingsInfoState extends State<SettingsInfo> {
               child: Column(
                 children: <Widget>[
                   ListGroupSpacer(
-                    title: "About the app",
+                    title: 'About the app',
                   ),
-                  GenericListItem(child: Text("Azure Sphere Driving Statistics\r\nVersion $_version build $_buildNumber")),
-                  GenericListItem(child: Text("mikroBUS™ is a MikroElectronica registered trademark.")),
+                  GenericListItem(child: Text('Azure Sphere Driving Statistics\r\nVersion $_version build $_buildNumber')),
+                  GenericListItem(child: Text('mikroBUS™ is a MikroElectronica registered trademark.')),
                 ],
               ),
             )

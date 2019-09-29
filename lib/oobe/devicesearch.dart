@@ -45,20 +45,20 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     SearchStatus.WIFI_DISCONNECTED: DevicePageControlsState(
         buttonEnabled: false,
         content:
-            "Before continuing, connect to a Wi-Fi network or set up your hotspot with the given properties.",
+            'Before continuing, connect to a Wi-Fi network or set up your hotspot with the given properties.',
         spinnerVisible: false,
-        title: "Connect"),
+        title: 'Connect'),
     SearchStatus.SEARCHING: DevicePageControlsState(
         buttonEnabled: false,
         content: null,
         spinnerVisible: true,
-        title: "Searching"),
+        title: 'Searching'),
     SearchStatus.DEVICE_BTN_WAIT: DevicePageControlsState(
         buttonEnabled: false,
         content:
-            "Please press the \"A\" button on the device to confirm the connection.",
+            'Please press the \'A\' button on the device to confirm the connection.',
         spinnerVisible: false,
-        title: "Confirm"),
+        title: 'Confirm'),
   };
 
   SearchStatus currentSearchStatus;
@@ -74,16 +74,16 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     try {
       ip = await Wifi.ip;
     } catch (e) {
-      ip = "127.0.0.1";
+      ip = '127.0.0.1';
     }
 
-    if (!ip.startsWith("192.168") &&
+    if (!ip.startsWith('192.168') &&
         currentSearchStatus != SearchStatus.WIFI_DISCONNECTED) {
       setState(() {
         currentSearchStatus = SearchStatus.WIFI_DISCONNECTED;
         devicePageControlsState = states[currentSearchStatus];
       });
-    } else if (ip.startsWith("192.168") &&
+    } else if (ip.startsWith('192.168') &&
         currentSearchStatus == SearchStatus.WIFI_DISCONNECTED) {
       setState(() {
         currentSearchStatus = SearchStatus.SEARCHING;
@@ -96,8 +96,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     if (goToNextIP && currentAddressIndex < 255) {
       goToNextIP = false;
       currentAddressIndex++;
-      String address = subnet + "." + currentAddressIndex.toString();
-      print("Trying to connect to $address.");
+      String address = subnet + '.' + currentAddressIndex.toString();
 
       currentScanner = OBDScanner(
           ipAddress: address,
@@ -105,17 +104,20 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
 
       currentScanner.connect();
     } else if (currentAddressIndex >= 255) {
+      logger.v('Scanned all the addresses in the subnet, restarting.');
       currentAddressIndex = 0;
     }
   }
 
   void attachButtonPress() {
+    logger.v('Attaching button A press event.');
     globalScanner.connect();
     globalScanner.onConnectionChanged = scannerConnectionChanged;
     globalScanner.onButtonAPressed = deviceButtonPressHandler;
   }
 
   void deviceButtonPressHandler(OBDScanner s) {
+    logger.i('Device button A pressed.');
     goToNextPage();
   }
 
@@ -124,10 +126,10 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
     goToNextIP = true;
     if (status != OBDScannerConnectionStatus.STATUS_DISCONNECTED &&
         status != OBDScannerConnectionStatus.STATUS_UNKNOWN) {
-      print("${scanner.ipAddress} is available!");
+      logger.i('Device found.');
 
       // Save the IP address
-      StoredSettings.saveIp(scanner.ipAddress);
+      scanner.saveIpAddress();
 
       // Make it global and wait for btn. press
       globalScanner = scanner;
@@ -146,7 +148,10 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
 
   void scannerConnectionChanged(
       OBDScanner scanner, OBDScannerConnectionStatus status) {
+    logger.d('Scanner connection status has changed to $status.');
     if (status == OBDScannerConnectionStatus.STATUS_DISCONNECTED) {
+      logger.w('Device disconnected.');
+      logger.i('Starting periodic timer.');
       scanTimer = Timer.periodic(Duration(milliseconds: 50), scanForDevices);
       globalScanner.onConnectionChanged = null;
       setState(() {
@@ -157,12 +162,13 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
   }
 
   void goToNextPage() {
+    logger.i('Opening "Add networks" page.');
     globalScanner.onConnectionChanged = null;
     if (scanTimer != null) scanTimer.cancel();
     Navigator.of(context, rootNavigator: true)
         .push(CupertinoPageRoute(
             builder: (context) => AddNetworksPage(
-                  title: "Add networks",
+                  title: 'Add networks',
                 )))
         .then((f) {
       // When coming back again
@@ -173,15 +179,22 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
   @override
   void initState() {
     super.initState();
+
+    logger.v('Device search page is being initialized.');
+
     initPage();
   }
 
   void initPage() {
     Timer(Duration(seconds: 60), (() {
       setState(() {
+        logger.v('Showing delay notice.');
         showNotice = true;
       });
     }));
+
+    logger.i('Starting periodic scan timer.');
+
     scanTimer = Timer.periodic(Duration(milliseconds: 50), scanForDevices);
     currentSearchStatus = SearchStatus.SEARCHING;
     devicePageControlsState = states[currentSearchStatus];
@@ -190,6 +203,11 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
   @override
   void dispose() {
     super.dispose();
+
+    logger.v('Device search page is being disposed.');
+
+    logger.i('Stopping timer and closing connection to global scanner.');
+
     scanTimer?.cancel();
     globalScanner?.closeConnection();
     globalScanner?.onConnectionChanged = null;
@@ -197,6 +215,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    // logger.v('Building device search page.');
     return CupertinoPageScaffold(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -242,7 +261,7 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
                       : 0.0,
               duration: Duration(milliseconds: 300),
               child: Text(
-                "The scan is taking longer than expected.\r\n\r\n- Check that the device is powered on.\r\n- Try again to follow the previous steps.\r\n- Reset the device.",
+                'The scan is taking longer than expected.\r\n\r\n- Check that the device is powered on.\r\n- Try again to follow the previous steps.\r\n- Reset the device.',
                 textAlign: TextAlign.center,
               ),
             ),
@@ -253,8 +272,9 @@ class _DeviceSearchPageState extends State<DeviceSearchPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 CupertinoButton(
-                    child: Text("Back"),
+                    child: Text('Back'),
                     onPressed: () {
+                      logger.v('Navigating back.');
                       scanTimer?.cancel();
                       Navigator.of(context, rootNavigator: true).pop();
                     }),

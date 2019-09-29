@@ -5,6 +5,8 @@ import 'package:azsphere_obd_app/oobe/devicesearch.dart';
 
 import 'package:carousel_slider/carousel_slider.dart';
 
+import '../globals.dart';
+
 /// Connection page (second page), guide for connecting to an existing network.
 class ExistingNetworkGuidePage extends StatefulWidget {
   ExistingNetworkGuidePage({Key key, this.title}) : super(key: key);
@@ -19,6 +21,7 @@ class ExistingNetworkGuidePage extends StatefulWidget {
 class _ExistingNetworkGuidePageState extends State<ExistingNetworkGuidePage> {
   @override
   Widget build(BuildContext context) {
+    // logger.v('Building exisiting network guide page.');
     return CupertinoPageScaffold(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -33,7 +36,7 @@ class _ExistingNetworkGuidePageState extends State<ExistingNetworkGuidePage> {
             padding: EdgeInsets.only(top: 120),
           ),
           Image.asset(
-            "assets/3.png",
+            'assets/3.png',
             height: 350,
           ),
           Container(
@@ -45,13 +48,13 @@ class _ExistingNetworkGuidePageState extends State<ExistingNetworkGuidePage> {
               pauseAutoPlayOnTouch: Duration(seconds: 12),
               items: <Widget>[
                 Text(
-                    "First, be sure you can access the device's command line interface, then install the Azure Sphere SDK.",
+                    'First, be sure you can access the device\'s command line interface, then install the Azure Sphere SDK.',
                     textAlign: TextAlign.center),
                 Text(
-                    "Open the Azure Sphere Command Line on your PC and run the following command:\r\n\r\nazsphere device wifi add -s SSID -k PASSWORD.",
+                    'Open the Azure Sphere Command Line on your PC and run the following command:\r\n\r\nazsphere device wifi add -s SSID -k PASSWORD.',
                     textAlign: TextAlign.center),
                 Text(
-                    "SSID and PASSWORD are respectively your network's name and its password.",
+                    'SSID and PASSWORD are respectively your network\'s name and its password.',
                     textAlign: TextAlign.center),
               ],
             ),
@@ -63,18 +66,20 @@ class _ExistingNetworkGuidePageState extends State<ExistingNetworkGuidePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 CupertinoButton(
-                    child: Text("Back"),
+                    child: Text('Back'),  
                     onPressed: () {
+                      logger.i('Navigating back.');
                       Navigator.of(context, rootNavigator: true).pop();
                     }),
                 CupertinoButton(
-                  child: Text("Continue"),
+                  child: Text('Continue'),
                   color: CustomCupertinoColors.systemBlue,
                   onPressed: () {
+                    logger.i('Opening "Device search" page.');
                     Navigator.of(context, rootNavigator: true)
                         .push(CupertinoPageRoute(
                             builder: (context) => DeviceSearchPage(
-                                  title: "Searching",
+                                  title: 'Searching',
                                 )));
                   },
                 )
