@@ -14,7 +14,7 @@ class CircleProgressBar extends StatelessWidget {
   final double internalThickness;
   final String text;
   final double angleSpan;
-  final bool horizontal;
+  final bool dashboardMode;
 
   /// Creates a new circular progress indicator, with the specified
   /// [backgroundColor], [foregroundColor] and value.
@@ -27,7 +27,7 @@ class CircleProgressBar extends StatelessWidget {
     this.angleSpan = 1,
     this.thickness = 6,
     this.internalThickness,
-    this.horizontal = false,
+    this.dashboardMode = false,
     @required this.foregroundColor,
     @required this.value,
   }) : super(key: key);
@@ -53,7 +53,7 @@ class CircleProgressBar extends StatelessWidget {
             bPercentage: this.angleSpan,
             strokeWidth: this.thickness,
             internalStrokeWidth: this.internalThickness,
-            horizontal: this.horizontal),
+            dashboardMode: this.dashboardMode),
       ),
     );
   }
@@ -68,7 +68,7 @@ class CircleProgressBarPainter extends CustomPainter {
   final double internalStrokeWidth;
   final Color backgroundColor;
   final Color foregroundColor;
-  final bool horizontal;
+  final bool dashboardMode;
 
   CircleProgressBarPainter({
     this.backgroundColor,
@@ -77,7 +77,7 @@ class CircleProgressBarPainter extends CustomPainter {
     this.bPercentage = 1,
     this.strokeWidth = 6,
     this.internalStrokeWidth,
-    this.horizontal = false,
+    this.dashboardMode = false,
   });
 
   @override
@@ -93,7 +93,7 @@ class CircleProgressBarPainter extends CustomPainter {
     final radius = (shortestSide / 2);
 
     // Start at the top. 0 radians represents the right edge
-    final double startAngle = -((horizontal ? 4 : 2) * Math.pi * 0.25);
+    final double startAngle = -((dashboardMode ? 5 : 2) * Math.pi * 0.25);
     final double sweepAngle = (2 * Math.pi * (this.percentage ?? 0)) * bPercentage;
 
     // Don't draw the background if we don't have a background color
