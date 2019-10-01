@@ -10,7 +10,11 @@ class CircleProgressBar extends StatelessWidget {
   final Color backgroundColor;
   final Color foregroundColor;
   final double value;
+  final double thickness;
+  final double internalThickness;
   final String text;
+  final double angleSpan;
+  final bool horizontal;
 
   /// Creates a new circular progress indicator, with the specified
   /// [backgroundColor], [foregroundColor] and value.
@@ -20,6 +24,10 @@ class CircleProgressBar extends StatelessWidget {
     Key key,
     this.backgroundColor,
     this.text = '',
+    this.angleSpan = 1,
+    this.thickness = 6,
+    this.internalThickness,
+    this.horizontal = false,
     @required this.foregroundColor,
     @required this.value,
   }) : super(key: key);
@@ -42,7 +50,10 @@ class CircleProgressBar extends StatelessWidget {
             backgroundColor: backgroundColor,
             foregroundColor: foregroundColor,
             percentage: this.value,
-            strokeWidth: 4),
+            bPercentage: this.angleSpan,
+            strokeWidth: this.thickness,
+            internalStrokeWidth: this.internalThickness,
+            horizontal: this.horizontal),
       ),
     );
   }
@@ -52,16 +63,22 @@ class CircleProgressBar extends StatelessWidget {
 /// the [strokeWidth] and the colors.
 class CircleProgressBarPainter extends CustomPainter {
   final double percentage;
+  final double bPercentage;
   final double strokeWidth;
+  final double internalStrokeWidth;
   final Color backgroundColor;
   final Color foregroundColor;
+  final bool horizontal;
 
   CircleProgressBarPainter({
     this.backgroundColor,
     @required this.foregroundColor,
     @required this.percentage,
-    double strokeWidth,
-  }) : this.strokeWidth = strokeWidth ?? 6;
+    this.bPercentage = 1,
+    this.strokeWidth = 6,
+    this.internalStrokeWidth,
+    this.horizontal = false,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -76,16 +93,25 @@ class CircleProgressBarPainter extends CustomPainter {
     final radius = (shortestSide / 2);
 
     // Start at the top. 0 radians represents the right edge
-    final double startAngle = -(2 * Math.pi * 0.25);
-    final double sweepAngle = (2 * Math.pi * (this.percentage ?? 0));
+    final double startAngle = -((horizontal ? 4 : 2) * Math.pi * 0.25);
+    final double sweepAngle = (2 * Math.pi * (this.percentage ?? 0)) * bPercentage;
 
     // Don't draw the background if we don't have a background color
     if (this.backgroundColor != null) {
       final backgroundPaint = Paint()
         ..color = this.backgroundColor
-        ..strokeWidth = this.strokeWidth / 2
+        ..strokeWidth = this.internalStrokeWidth ?? this.strokeWidth / 2
+        ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
-      canvas.drawCircle(center, radius, backgroundPaint);
+
+      final double sweepBAngle = (2 * Math.pi * (this.bPercentage ?? 0));
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweepBAngle,
+        false,
+        backgroundPaint,
+      );
     }
 
     canvas.drawArc(
