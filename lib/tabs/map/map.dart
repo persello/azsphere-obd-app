@@ -16,14 +16,15 @@ class MapTab extends StatefulWidget {
 }
 
 class _MapTabState extends State<MapTab> {
-
   Completer<GoogleMapController> _controller = Completer();
   bool _mapActivityIndicatorVisible = true;
 
   void _onMapCreated(GoogleMapController controller) {
     PermissionHandler().requestPermissions([PermissionGroup.location]);
     logger.i('Permission requested.');
-    _controller.complete(controller);
+    try {
+      _controller.complete(controller);
+    } catch (e) {}
     logger.v('Controller completed.');
     setState(() {
       _mapActivityIndicatorVisible = false;
@@ -32,7 +33,12 @@ class _MapTabState extends State<MapTab> {
 
   void _editMapView() {
     logger.i('Opening map view editor.');
-    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(fullscreenDialog: true, builder: (context) => MapViewSettings(title: 'Map Settings', data: appSettings.mapViewSettingsData,)));
+    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => MapViewSettings(
+              title: 'Map Settings',
+              data: appSettings.mapViewSettingsData,
+            )));
   }
 
   @override
@@ -50,8 +56,7 @@ class _MapTabState extends State<MapTab> {
       child: Stack(
         children: <Widget>[
           GoogleMap(
-            initialCameraPosition:
-                CameraPosition(target: LatLng(0, 0), zoom: 1),
+            initialCameraPosition: CameraPosition(target: LatLng(0, 0), zoom: 1),
             onMapCreated: _onMapCreated,
             compassEnabled: true,
             myLocationButtonEnabled: true,

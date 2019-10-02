@@ -392,6 +392,7 @@ class _HomeTabState extends State<HomeTab> {
                       child: CircleProgressBar(
                         backgroundColor: CustomCupertinoColors.systemGray5,
                         foregroundColor: CustomCupertinoColors.systemBlue,
+                        text: 'AA',
                         value: (globalScanner?.sdCardMounted ?? false) ? currentFilesSize / (1024 * (globalScanner?.sdCardSize ?? double.infinity)) : 0,
                       ),
                     ),

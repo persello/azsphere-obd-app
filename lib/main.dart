@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:azsphere_obd_app/classes/logdata.dart';
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
+import 'package:azsphere_obd_app/tabs/dashboard/dashboard.dart';
 import 'package:azsphere_obd_app/tabs/home/home.dart';
 import 'package:azsphere_obd_app/tabs/map/map.dart';
 import 'package:azsphere_obd_app/tabs/settings/settings.dart';
@@ -146,11 +147,7 @@ class _MainPageState extends State<MainPage> {
             });
           case 3:
             return CupertinoTabView(builder: (context) {
-              return CupertinoPageScaffold(
-                child: Center(
-                  child: Text('4'),
-                ),
-              );
+              return DashboardTab(title: 'Dashboard');
             });
           case 4:
           default:
