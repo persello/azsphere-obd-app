@@ -2,6 +2,7 @@ import 'package:azsphere_obd_app/customcontrols.dart';
 import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:bezier_chart/bezier_chart.dart';
 
 class DashboardTab extends StatefulWidget {
   DashboardTab({Key key, this.title}) : super(key: key);
@@ -180,6 +181,8 @@ class _DashboardTabState extends State<DashboardTab> {
             ),
           ),
 
+          Divider(height: 0),
+
           // Cards container
           Expanded(
             child: ListView(
@@ -331,7 +334,138 @@ class _DashboardTabState extends State<DashboardTab> {
                         colors: <Color>[CustomCupertinoColors.systemRed, CustomCupertinoColors.systemOrange]),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  height: 160,
+                  alignment: Alignment.topLeft,
+                  padding: EdgeInsets.all(12),
+
+                  // Third card content
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      // Title
+                      Text(
+                        'Fuel consumption',
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                            color: CustomCupertinoColors.white.withOpacity(.8)),
+                      ),
+                      Divider(
+                        color: CustomCupertinoColors.white.withOpacity(.4),
+                      ),
+
+                      // Content
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          children: <Widget>[
+                            // Values column
+                            Expanded(
+                              child: Column(
+                                children: <Widget>[
+                                  Text(
+                                    '12.4',
+                                    style: TextStyle(
+                                        fontSize: 60,
+                                        fontWeight: FontWeight.w300,
+                                        color: CustomCupertinoColors.white),
+                                  ),
+                                  Text(
+                                    'l/h',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w500,
+                                        color: CustomCupertinoColors.white),
+                                  ),
+                                  Divider(
+                                    color: CustomCupertinoColors.white,
+                                  ),
+                                  Row(
+                                    textBaseline: TextBaseline.alphabetic,
+                                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Text(
+                                        '21.3',
+                                        style: TextStyle(
+                                            fontSize: 30,
+                                            fontWeight: FontWeight.w300,
+                                            color: CustomCupertinoColors.white),
+                                      ),
+                                      Text(
+                                        ' km/l',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w500,
+                                            color: CustomCupertinoColors.white),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Chart
+                            ShaderMask(
+                              shaderCallback: (rect) {
+                                return LinearGradient(
+                                  begin: Alignment.centerRight,
+                                  end: Alignment.centerLeft,
+                                  colors: [Colors.black, Colors.transparent],
+                                ).createShader(Rect.fromLTRB(50, 0, rect.width / 3, rect.height));
+                              },
+                              blendMode: BlendMode.dstIn,
+                              child: Container(
+                                height: 150,
+                                width: MediaQuery.of(context).size.width - 190,
+                                child: BezierChart(
+                                  bezierChartScale: BezierChartScale.CUSTOM,
+                                  xAxisCustomValues: const [0, 5, 10, 15, 20, 25, 30, 35],
+                                  series: const [
+                                    BezierLine(
+                                      data: const [
+                                        DataPoint<double>(value: 10, xAxis: 0),
+                                        DataPoint<double>(value: 130, xAxis: 5),
+                                        DataPoint<double>(value: 50, xAxis: 10),
+                                        DataPoint<double>(value: 150, xAxis: 15),
+                                        DataPoint<double>(value: 75, xAxis: 20),
+                                        DataPoint<double>(value: 0, xAxis: 25),
+                                        DataPoint<double>(value: 5, xAxis: 30),
+                                        DataPoint<double>(value: 45, xAxis: 35),
+                                      ],
+                                    ),
+                                  ],
+                                  config: BezierChartConfig(
+                                      showVerticalIndicator: false,
+                                      backgroundColor: Colors.transparent,
+                                      showDataPoints: false,
+                                      xAxisTextStyle: TextStyle(fontSize: 0),
+                                      footerHeight: 15,
+                                      displayLinesXAxis: false,
+                                      contentWidth: MediaQuery.of(context).size.width - 150),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Button spacer
+                      Divider(
+                        color: CustomCupertinoColors.white.withOpacity(0),
+                      ),
+
+                      // Button
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: CupertinoButton(
+                          color: CustomCupertinoColors.black.withOpacity(.1),
+                          child: Text('Set fuel type'),
+                          onPressed: () {},
+                        ),
+                      ),
+                    ],
+                  ),
                 )
               ],
             ),
