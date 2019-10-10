@@ -30,8 +30,8 @@ void main() async {
   Hive.init('${directory.path}/hive');
 
   // Adapters (one-time registration)
-  Hive.registerAdapter(VehicleAdapter(), HIVE_VEHICLE_ADAPTER_ID);
   Hive.registerAdapter(FuelAdapter(), HIVE_FUEL_ADAPTER_ID);
+  Hive.registerAdapter(VehicleAdapter(), HIVE_VEHICLE_ADAPTER_ID);
   Hive.registerAdapter(MapViewSettingsDataAdapter(), HIVE_MAP_VIEW_SETTINGS_ADAPTER_ID);
   Hive.registerAdapter(RawLogItemTypeAdapter(), HIVE_RAW_LOG_ITEM_ADAPTER_ID);
   Hive.registerAdapter(LogSessionAdapter(), HIVE_LOG_SESSION_ADAPTER_ID);

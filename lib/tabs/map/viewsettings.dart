@@ -6,7 +6,7 @@ import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/globals.dart';
 
 /// Map View Settings page
-/// 
+///
 /// In this page you can change settings related to the [GoogleMap]
 /// control in the [MapTab] page.
 class MapViewSettings extends StatefulWidget {
@@ -20,6 +20,13 @@ class MapViewSettings extends StatefulWidget {
     1: Text('Normal'),
     4: Text('Satellite'),
     3: Text('Terrain')
+  };
+
+  final Map<int, Widget> dataTypeChoices = const <int, Widget>{
+    0: Text('None'),
+    1: Text('Speed'),
+    2: Text('RPM'),
+    3: Text('Fuel')
   };
 
   @override
@@ -38,9 +45,7 @@ class _MapViewSettingsState extends State<MapViewSettings> {
       ),
       child: ListView(
         children: <Widget>[
-          ListGroupSpacer(
-            title: 'View',
-          ),
+          ListGroupSpacer(title: 'View'),
           ListSwitch(
             title: 'Show my location',
             onChanged: (bool value) {
@@ -53,7 +58,7 @@ class _MapViewSettingsState extends State<MapViewSettings> {
           GenericListItem(
             child: CupertinoSegmentedControl<int>(
               onValueChanged: (int selectedMapType) {
-                logger.d('Selected map type is now ${MapType.values[selectedMapType]}');
+                logger.d('Selected map type is now ${MapType.values[selectedMapType]}.');
                 setState(() {
                   widget.data.mapType = selectedMapType;
                   appSettings.saveMapSettings();
@@ -62,6 +67,21 @@ class _MapViewSettingsState extends State<MapViewSettings> {
               children: widget.mapTypeChoices,
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               groupValue: widget.data.mapType,
+            ),
+          ),
+          ListGroupSpacer(title: 'Data'),
+          GenericListItem(
+            child: CupertinoSegmentedControl<int>(
+              onValueChanged: (int selectedDataType) {
+                logger.d('Selected data type is now ${widget.dataTypeChoices[selectedDataType]}.');
+                setState(() {
+                  widget.data.mapDataType = selectedDataType;
+                  appSettings.saveMapSettings();
+                });
+              },
+              children: widget.dataTypeChoices,
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              groupValue: widget.data.mapDataType,
             ),
           ),
         ],

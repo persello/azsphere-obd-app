@@ -47,8 +47,7 @@ class WiFiNetwork {
 /// The global app settings.
 class StoredSettings {
   StoredSettings() {
-    logger.v(
-        'StoredSettings constructor called, opening "app-settings" Hive box.');
+    logger.v('StoredSettings constructor called, opening "app-settings" Hive box.');
 
     // Opens the app settings box
     _hiveReady = getAppSettingsBox();
@@ -67,7 +66,8 @@ class StoredSettings {
     await this.hiveReady;
 
     // Map settings
-    this.mapViewSettingsData = appSettings.get('map-view-settings', defaultValue: new MapViewSettingsData(showMyLocation: true, mapType: MapType.normal.index));
+    this.mapViewSettingsData = appSettings.get('map-view-settings',
+        defaultValue: new MapViewSettingsData(showMyLocation: true, mapType: MapType.normal.index));
   }
 
   void saveMapSettings() async {
@@ -82,13 +82,12 @@ class StoredSettings {
   Future _hiveReady;
 
   Future get hiveReady => _hiveReady;
-
 }
 
 /// Map view settings.
 @HiveType()
 class MapViewSettingsData {
-  MapViewSettingsData({this.showMyLocation, this.mapType});
+  MapViewSettingsData({this.showMyLocation = false, this.mapType = 1, this.mapDataType = 3});
 
   @HiveField(0)
   bool showMyLocation;
@@ -96,4 +95,7 @@ class MapViewSettingsData {
   // Normal, hybrid or terrain
   @HiveField(1)
   int mapType;
+
+  @HiveField(2)
+  int mapDataType;
 }

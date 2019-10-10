@@ -7,12 +7,16 @@ part 'logdata.g.dart';
 /// Utilities to import and convert data from raw to a structure.
 class SessionImporter {
   /// Returns a list of sessions by parsing data contained into a string.
-  static List<LogSession> logSessionListFromString(String input) {
+  ///
+  /// [itemDateTimeChecker] should return [true] if the supplied [DateTime] is still unknown,
+  /// [false] if that item is already inside the date tuples.
+  static List<LogSession> logSessionListFromString(
+      String input, bool Function(DateTime) itemDateTimeChecker) {
     List<RawTimedItem> temporaryItemBuffer = new List<RawTimedItem>();
 
     logger.i('Importing session from string. String size is ${input.length} bytes.');
 
-    List<String> rawItems = input.split('\n');
+    List<String> rawItems = input.split('\r\n');
 
     logger.i('Input splitted into ${rawItems.length} parts.');
 
@@ -42,11 +46,11 @@ class SessionImporter {
           2) {
         // Prepare
         try {
-        currentSession.complete = true;
-        currentSession.normalizeDateTime();
-        currentSession.startGmtDateTime = currentSession.rawTimedData.first.gmtDateTime;
-        currentSession.stopGmtDateTime = currentSession.rawTimedData.last.gmtDateTime;
-        returnList.add(currentSession);
+          currentSession.complete = true;
+          currentSession.normalizeDateTime();
+          currentSession.startGmtDateTime = currentSession.rawTimedData.first.gmtDateTime;
+          currentSession.stopGmtDateTime = currentSession.rawTimedData.last.gmtDateTime;
+          returnList.add(currentSession);
         } catch (ex) {
           logger.w('Error while splitting sessions: ${ex.toString}.');
         }
@@ -56,11 +60,20 @@ class SessionImporter {
       }
       // Still current session: add data to it.
       else {
-        currentSession.rawTimedData.add(temporaryItemBuffer[i]);
+        if (itemDateTimeChecker(temporaryItemBuffer[i].gmtDateTime))
+          currentSession.rawTimedData.add(temporaryItemBuffer[i]);
       }
     }
 
-    returnList.add(currentSession);
+    try {
+      currentSession.complete = true;
+      currentSession.normalizeDateTime();
+      currentSession.startGmtDateTime = currentSession.rawTimedData.first.gmtDateTime;
+      currentSession.stopGmtDateTime = currentSession.rawTimedData.last.gmtDateTime;
+      returnList.add(currentSession);
+    } catch (ex) {
+      logger.w('Error while splitting sessions: ${ex.toString}.');
+    }
 
     logger.i('${returnList.length} sessions created.');
 

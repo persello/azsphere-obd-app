@@ -512,9 +512,9 @@ class OBDScanner {
         }
         break;
       case MessageHeader_GetFileSize:
-        if (onFileSizeReceived != null) {
+        if (onFileSizeReceived != null && message.arguments.startsWith('O')) {
           onFileSizeReceived(this, message.arguments.split('#')[0].substring(1),
-              int.tryParse(message.arguments.split('#')[1] ?? 0));
+              int.tryParse(message.arguments.split('#')[1]) ?? 0);
         }
         break;
       case MessageHeader_GetFileContent:
@@ -551,7 +551,7 @@ class OBDScanner {
         // If a download is in progress...
         if (_fileDownloading) {
           // Add raw data to current file if it is not a command.
-          _currentFile.content += rawData;
+          _currentFile.content += "$rawData\r\n";
           _currentFile.downloadedBytes += rawData.length;
           // logger.v('File length: ${_currentFile.downloadedBytes}.');
           ret = true;
