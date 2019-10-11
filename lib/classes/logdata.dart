@@ -263,5 +263,8 @@ enum RawLogItemType {
   Airflow,
 
   @HiveField(13)
-  ThrottlePosition
+  ThrottlePosition,
+
+  @HiveField(14)
+  None
 }

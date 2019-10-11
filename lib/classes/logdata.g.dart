@@ -38,6 +38,8 @@ class RawLogItemTypeAdapter extends TypeAdapter<RawLogItemType> {
         return RawLogItemType.Airflow;
       case 13:
         return RawLogItemType.ThrottlePosition;
+      case 14:
+        return RawLogItemType.None;
       default:
         return null;
     }
@@ -87,6 +89,9 @@ class RawLogItemTypeAdapter extends TypeAdapter<RawLogItemType> {
         break;
       case RawLogItemType.ThrottlePosition:
         writer.writeByte(13);
+        break;
+      case RawLogItemType.None:
+        writer.writeByte(14);
         break;
     }
   }
