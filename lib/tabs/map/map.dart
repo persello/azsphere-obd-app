@@ -4,6 +4,7 @@ import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/tabs/map/viewsettings.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:async';
+import 'dart:math' as Math;
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -22,6 +23,12 @@ class _MapTabState extends State<MapTab> {
   GoogleMapController _controller;
   bool _mapActivityIndicatorVisible = true;
   Set<Circle> _speedMarkers = {};
+  double _currentZoom = 0;
+
+  void getCameraParams(CameraPosition camera) {
+    _currentZoom = camera.zoom;
+    logger.i('New zoom is $_currentZoom.');
+  }
 
   void calculateSpeedMarkers() async {
     logger.i('Calculating speed markers.');
@@ -40,14 +47,47 @@ class _MapTabState extends State<MapTab> {
 
     LatLngBounds mapBounds = await _controller.getVisibleRegion();
 
+    // Get item count and compute divider
+    int markersInView = 0;
     for (LogSession session in car.logSessions) {
       for (RawTimedItem item in session.rawTimedData) {
         if (item.type == RawLogItemType.Speed) {
           if (lastLoc != null && mapBounds.contains(lastLoc)) {
+            markersInView++;
+          }
+        } else if (item.type == RawLogItemType.Latitude) {
+          lastLat = item.numericContent;
+        } else if (item.type == RawLogItemType.Longitude) {
+          lastLng = item.numericContent;
+          lastLoc = new LatLng(lastLat, lastLng);
+        }
+      }
+    }
+
+    // We want no more than 500 markers per screen
+    double divider = 500 / markersInView;
+    double currentItemDivider = 0;
+
+    logger.i('There should be $markersInView markers in view, divider is $divider.');
+
+    for (LogSession session in car.logSessions) {
+      for (RawTimedItem item in session.rawTimedData) {
+        if (item.type == RawLogItemType.Speed) {
+          // Add only when in view and up to 500 markers
+          if (lastLoc != null && mapBounds.contains(lastLoc) && (currentItemDivider += divider) > cid) {
+
+            // Calculate dot color
+            // Speed = 0 km/h -> Green (0), Speed >= 130 km/h -> Red (1)
+            double colorFactor = item.numericContent >= 130 ? 1 : item.numericContent / 130;
+
+            // Calculate the radius
+            double cRadius = 0.2851041 + (268.3408 - 0.2851041)/(1 + Math.pow((_currentZoom/9.965059),8.10246));
+
             Circle c = new Circle(
                 center: lastLoc,
-                radius: 12,
-                fillColor: CustomCupertinoColors.systemRed,
+                radius: cRadius,
+                fillColor: Color.alphaBlend(CustomCupertinoColors.systemRed.withOpacity(colorFactor),
+                    CustomCupertinoColors.systemGreen),
                 strokeWidth: 0,
                 circleId: new CircleId(cid.toString()));
             _speedMarkers.add(c);
@@ -63,7 +103,7 @@ class _MapTabState extends State<MapTab> {
     }
 
     setState(() {
-     _speedMarkers = _speedMarkers; 
+      _speedMarkers = _speedMarkers;
     });
 
     logger.d('$cid markers added.');
@@ -115,6 +155,7 @@ class _MapTabState extends State<MapTab> {
             initialCameraPosition: CameraPosition(target: LatLng(0, 0), zoom: 1),
             onMapCreated: _onMapCreated,
             onCameraIdle: calculateSpeedMarkers,
+            onCameraMove: getCameraParams,
             circles: _speedMarkers,
             compassEnabled: true,
             myLocationButtonEnabled: true,
