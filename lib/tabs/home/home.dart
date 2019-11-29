@@ -32,9 +32,39 @@ class _HomeTabState extends State<HomeTab> {
   int lastIpByteTried = 0;
   bool lastScanWasDefaultIp = false;
   Timer rtDataTimer;
+  Timer downloadWatchdogTimer;
 
   int currentFilesSize = 0;
   double syncProgress = 0;
+
+  double lastPercentage = 0;
+  void downloadWatchdog(Timer t) {
+    if (syncInProgress && lastPercentage == syncProgress) {
+      t.cancel();
+      setState(() {
+        syncInProgress = false;
+      });
+
+      // Show dialog to user
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) => new CupertinoAlertDialog(
+          title: new Text("Download failed"),
+          content: new Text("An error occurred during the download process. All the downloaded data will now be processed."),
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              child: new Text("Continue"),
+              onPressed: () {
+                Navigator.pop(context);
+                _isDisconnectionDialogShown = false;
+              },
+            )
+          ],
+        ),
+      );
+    }
+  }
 
   // TODO: Create a list of pollable messages
 
@@ -193,7 +223,7 @@ class _HomeTabState extends State<HomeTab> {
 
       await scanner.restoreLastIpAddress();
 
-      // TODO: Not restored
+      // TODO: Not restored?
 
       logger.d('The last IP of the device was ${scanner.ipAddress}.');
 
@@ -468,9 +498,9 @@ class _HomeTabState extends State<HomeTab> {
                           Container(
                             width: 200,
                             child: Text(
-                              car.logSessions.length == 0 ?
-                              'Sync your device to get some data.' :
-                              'Most recent data is from ${DateFormat.yMMMMd('en_US').add_jm().format(car.logSessions.last.stopGmtDateTime.toLocal())}.',
+                              car.logSessions.length == 0
+                                  ? 'Sync your device to get some data.'
+                                  : 'Most recent data is from ${DateFormat.yMMMMd('en_US').add_jm().format(car.logSessions.last.stopGmtDateTime.toLocal())}.',
                               overflow: TextOverflow.fade,
                             ),
                           ),
@@ -489,6 +519,9 @@ class _HomeTabState extends State<HomeTab> {
                                       ? () {
                                           // Start sync
                                           logger.i('Sync button pressed.');
+
+                                          downloadWatchdogTimer =
+                                              new Timer.periodic(new Duration(seconds: 20), downloadWatchdog);
 
                                           car.askRemoteLogs();
 

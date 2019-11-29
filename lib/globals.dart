@@ -87,7 +87,7 @@ class StoredSettings {
 /// Map view settings.
 @HiveType()
 class MapViewSettingsData {
-  MapViewSettingsData({this.showMyLocation = false, this.mapType = 1, this.mapDataType = 3});
+  MapViewSettingsData({this.showMyLocation = false, this.mapType = 1, this.mapDataType = 1});
 
   @HiveField(0)
   bool showMyLocation;

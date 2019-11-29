@@ -7,8 +7,6 @@ import 'logdata.dart';
 
 part 'vehicle.g.dart';
 
-// TODO: FIX FUEL TYPE NOT BEING RESTORED!!
-
 @HiveType()
 class Vehicle {
   Vehicle({this.brand, this.model, this.vin, this.fuel = CommonFuels.undefined}) {
@@ -18,7 +16,7 @@ class Vehicle {
 
   Future _getVehicleBox() async {
     if (!Hive.isBoxOpen('vehicle-data')) {
-      storedVehicleData = await Hive.openBox('vehicle-data');
+      storedVehicleData = await Hive.openBox('vehicle-data', lazy: true);
     } else {
       storedVehicleData = Hive.box('vehicle-data');
     }
@@ -56,6 +54,7 @@ class Vehicle {
     logger.i('Starting download process.');
 
     if (onDownloadProgressUpdate != null) onDownloadProgressUpdate(0);
+    parseStarted = false;
 
     // Step 1: Get last file name.
     globalScanner.onLastFileNumberReceived = _fileNumberReceived;
@@ -154,6 +153,7 @@ class Vehicle {
     }
   }
 
+  bool parseStarted = false;
   int lastFileNumber = 0;
   void _fileContentReceived(OBDScanner scanner, RemoteFile file) {
     logger.v('${file.name} received.');
@@ -164,6 +164,8 @@ class Vehicle {
     // Step 7: Consolidate with downloadQueue list
     for (RemoteFile f in downloadQueue) {
       if (f.name.toUpperCase() == file.name.toUpperCase()) {
+        if (f.downloadedBytes > 0) break;
+
         f
           ..content = file.content
           ..downloadedBytes = file.downloadedBytes;
@@ -214,14 +216,20 @@ class Vehicle {
         stringBuffer.write(f.content);
       }
 
-      // Convert to session
-      logSessions.addAll(SessionImporter.logSessionListFromString(stringBuffer.toString(), checkItemDateTime));
-
-      // Save to hive
-      save();
+      if (!parseStarted) {
+        parseAndSave(stringBuffer);
+      }
 
       if (onDownloadProgressUpdate != null) onDownloadProgressUpdate(1);
     }
+  }
+
+  void parseAndSave(StringBuffer stringBuffer) {
+    // Convert to sessions
+    logSessions.addAll(SessionImporter.logSessionListFromString(stringBuffer.toString(), checkItemDateTime));
+    parseStarted = true;
+    // Save to hive
+    save();
   }
 
   bool checkItemDateTime(DateTime input) {
@@ -239,7 +247,7 @@ class Vehicle {
     // Wait for hive initialization
     await this.hiveReady;
 
-    storedVehicleData.put('vehicle', this);
+    await storedVehicleData.put('vehicle', this);
 
     logger.d('Image path is "${this.imagePath}.');
   }
@@ -253,7 +261,7 @@ class Vehicle {
     await this.hiveReady;
     await v.hiveReady;
 
-    v = storedVehicleData.get('vehicle', defaultValue: new Vehicle());
+    v = await storedVehicleData.get('vehicle', defaultValue: new Vehicle());
 
     this
       ..fuel = v.fuel

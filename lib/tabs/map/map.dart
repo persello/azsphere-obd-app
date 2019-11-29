@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:azsphere_obd_app/classes/fuel.dart';
 import 'package:azsphere_obd_app/classes/logdata.dart';
 import 'package:azsphere_obd_app/globals.dart';
@@ -22,6 +24,7 @@ class MapTab extends StatefulWidget {
 class _MapTabState extends State<MapTab> {
   Completer<GoogleMapController> _controllerCompleter = Completer();
   GoogleMapController _controller;
+  String _unitLabel = '';
   bool _mapActivityIndicatorVisible = true;
   Set<Circle> _dataMarkers = {};
   double _currentZoom = 0;
@@ -38,11 +41,11 @@ class _MapTabState extends State<MapTab> {
   ///
   /// [airflow] is in g/s, and [speed] in km/h
   double lastSpeed = 0;
-  double lastLKM1;
-  double lastLKM2;
+  double lastLHKM1;
+  double lastLHKM2;
   double calculateLKM(double airflow, Fuel fuel, double speed) {
     // Filter slow and accelerations
-    if (speed < 10 || (speed - lastSpeed) > 1000) return 0;
+    if (speed < 10 || (speed - lastSpeed) > 10) return 0;
 
     double gramsOfFuelPerSecond = airflow * fuel.massAirFuelRatio;
     double millilitersOfFuelPerSecond = gramsOfFuelPerSecond / fuel.density;
@@ -51,15 +54,16 @@ class _MapTabState extends State<MapTab> {
     double litersHundredKm = 100 / kilometersPerLitre;
 
     // First time set to the same
-    if (lastLKM1 == null) lastLKM1 = litersHundredKm;
-    if (lastLKM2 == null) lastLKM2 = litersHundredKm;
+    if (lastLHKM1 == null) lastLHKM1 = litersHundredKm;
+    if (lastLHKM2 == null) lastLHKM2 = litersHundredKm;
 
     // Calculate average
-    double average = (litersHundredKm + lastLKM1 + lastLKM2) / 3;
+    double average = (litersHundredKm + lastLHKM1 + lastLHKM2) / 3;
 
     // Shift
-    lastLKM2 = lastLKM1;
-    lastLKM1 = litersHundredKm;
+    lastLHKM2 = lastLHKM1;
+    lastLHKM1 = litersHundredKm;
+
     // Save speed and return
     lastSpeed = speed;
     return average;
@@ -76,34 +80,38 @@ class _MapTabState extends State<MapTab> {
     double lastLng = 0;
     LatLng lastLoc;
     double lastSpeed = 0;
-    int cid = 0;
 
     RawLogItemType interestingDataType;
 
-    switch (appSettings.mapViewSettingsData.mapDataType) {
-      case 0:
-        // None
-        interestingDataType = RawLogItemType.None;
-        _maxValue = 0;
-        _minValue = 0;
-        break;
-      case 1:
-        interestingDataType = RawLogItemType.GPSSpeed;
-        _maxValue = 90;
-        _minValue = double.infinity;
-        break;
-      case 2:
-        interestingDataType = RawLogItemType.EngineRPM;
-        _maxValue = 1500;
-        _minValue = double.infinity;
-        break;
-      case 3:
-        interestingDataType = RawLogItemType.Airflow;
-        // Litres for 100km
-        _maxValue = 10;
-        _minValue = double.infinity;
-        break;
-    }
+    setState(() {
+      switch (appSettings.mapViewSettingsData.mapDataType) {
+        case 0:
+          // None
+          interestingDataType = RawLogItemType.None;
+          _maxValue = 0;
+          _minValue = 0;
+          break;
+        case 1:
+          interestingDataType = RawLogItemType.GPSSpeed;
+          _maxValue = 90;
+          _minValue = double.infinity;
+          _unitLabel = 'kph';
+          break;
+        case 2:
+          interestingDataType = RawLogItemType.EngineRPM;
+          _maxValue = 1500;
+          _minValue = double.infinity;
+          _unitLabel = 'RPM';
+          break;
+        case 3:
+          interestingDataType = RawLogItemType.Airflow;
+          // Litres for 100km
+          _maxValue = 10;
+          _minValue = double.infinity;
+          _unitLabel = 'l/100';
+          break;
+      }
+    });
 
     // Get map bounds
     if (_controller == null) return;
@@ -116,7 +124,6 @@ class _MapTabState extends State<MapTab> {
       for (RawTimedItem item in session.rawTimedData) {
         if (item.type == interestingDataType) {
           if (lastLoc != null && mapBounds.contains(lastLoc)) {
-            markersInView++;
 
             // Value calculation
             double value = appSettings.mapViewSettingsData.mapDataType == 3
@@ -130,6 +137,8 @@ class _MapTabState extends State<MapTab> {
             } else if (appSettings.mapViewSettingsData.mapDataType != 2) {
               _minValue = value < _minValue ? value : _minValue;
             }
+
+            markersInView++;
 
             // No more markers here, please
             lastLoc = null;
@@ -149,6 +158,8 @@ class _MapTabState extends State<MapTab> {
     // We want no more than 500 markers per screen
     double divider = 500 / markersInView;
     double currentItemDivider = 0;
+    int addedMarkers = 0;
+    int lastStateSet = 0;
 
     logger.i('There should be $markersInView markers in view, divider is $divider.');
 
@@ -158,7 +169,7 @@ class _MapTabState extends State<MapTab> {
           // Add only when in view
           if (lastLoc != null && mapBounds.contains(lastLoc)) {
             // Up to about 500 markers
-            if ((currentItemDivider += divider) > cid) {
+            if ((currentItemDivider += divider) > addedMarkers && item.numericContent > 3) {
               // Calculate value for fuel consumption
               double value = appSettings.mapViewSettingsData.mapDataType == 3
                   ? calculateLKM(item.numericContent, car.fuel, lastSpeed)
@@ -168,7 +179,7 @@ class _MapTabState extends State<MapTab> {
               // 0 -> Green (0), maxValue -> Red (1)
               double colorFactor = (value - _minValue) / (_maxValue - _minValue);
               if (colorFactor > 1) colorFactor = 1;
-              if (colorFactor < 0) colorFactor = 0;
+              if (colorFactor.isNaN || colorFactor < 0) colorFactor = 0;
 
               // Calculate the radius
               double cRadius =
@@ -181,10 +192,20 @@ class _MapTabState extends State<MapTab> {
                           CustomCupertinoColors.systemGreen)
                       .withOpacity(0.2 + _currentZoom / 30),
                   strokeWidth: 0,
-                  circleId: new CircleId(cid.toString()));
+                  circleId: new CircleId(addedMarkers.toString()));
               _dataMarkers.add(c);
-              cid++;
+
+              // Add markers in blocks of 100
+              if (lastStateSet < (addedMarkers - 100)) {
+                logger.i('Partial markers: $addedMarkers, previous was $lastStateSet');
+                lastStateSet = addedMarkers;
+
+                setState(() {
+                  _dataMarkers = _dataMarkers;
+                });
+              }
               lastLoc = null;
+              addedMarkers++;
             }
           }
         } else if (item.type == RawLogItemType.Latitude) {
@@ -203,11 +224,82 @@ class _MapTabState extends State<MapTab> {
       _dataMarkers = _dataMarkers;
     });
 
-    logger.d('$cid markers added.');
+    logger.d('$addedMarkers markers added.');
   }
 
   void _onMapCreated(GoogleMapController controller) {
     _controller = controller;
+    _controller.setMapStyle('''[
+    {
+        "featureType": "landscape.natural",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "color": "#e0efef"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "geometry.fill",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "hue": "#1900ff"
+            },
+            {
+                "color": "#c0e8e8"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "lightness": 100
+            },
+            {
+                "visibility": "simplified"
+            }
+        ]
+    },
+    {
+        "featureType": "road",
+        "elementType": "labels",
+        "stylers": [
+            {
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "transit.line",
+        "elementType": "geometry",
+        "stylers": [
+            {
+                "visibility": "on"
+            },
+            {
+                "lightness": 700
+            }
+        ]
+    },
+    {
+        "featureType": "water",
+        "elementType": "all",
+        "stylers": [
+            {
+                "color": "#7dcdcd"
+            }
+        ]
+    }
+    ]''');
 
     // Do map work
     PermissionHandler().requestPermissions([PermissionGroup.location]);
@@ -222,9 +314,9 @@ class _MapTabState extends State<MapTab> {
     calculateDataMarkers();
   }
 
-  void _editMapView() {
+  void _editMapView() async {
     logger.i('Opening map view editor.');
-    Navigator.of(context, rootNavigator: true).push(
+    var t = await Navigator.of(context, rootNavigator: true).push(
       CupertinoPageRoute(
         fullscreenDialog: true,
         builder: (context) => MapViewSettings(
@@ -233,6 +325,9 @@ class _MapTabState extends State<MapTab> {
         ),
       ),
     );
+
+    // Recalculate when returning back
+    calculateDataMarkers();
   }
 
   @override
@@ -267,42 +362,68 @@ class _MapTabState extends State<MapTab> {
             mapType: MapType.values[appSettings.mapViewSettingsData.mapType],
             tiltGesturesEnabled: false,
           ),
-          Container(
-            alignment: Alignment.center,
-            margin: EdgeInsets.only(left: 8, top: 180),
-            padding: EdgeInsets.symmetric(vertical: 10),
-            width: 40,
-            height: 360,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: CustomCupertinoColors.black.withOpacity(.4),
-                  blurRadius: 12,
-                ),
-              ],
-              color: CustomCupertinoColors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: <Widget>[
-                Text('${_maxValue.toInt()}'),
-                Expanded(
-                  child: Container(
-                    width: 6,
-                    margin: EdgeInsets.symmetric(vertical: 10),
+          Visibility(
+            visible: (appSettings.mapViewSettingsData.mapDataType != 0),
+            child: Container(
+              margin: EdgeInsets.only(left: 8, top: 160),
+              child: Column(
+                children: <Widget>[
+                  Container(
                     alignment: Alignment.center,
+                    padding: EdgeInsets.symmetric(vertical: 10),
+                    width: 40,
+                    height: 360,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [CustomCupertinoColors.systemRed, CustomCupertinoColors.systemGreen],
-                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: CustomCupertinoColors.black.withOpacity(.4),
+                          blurRadius: 12,
+                        ),
+                      ],
+                      color: CustomCupertinoColors.white,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Column(
+                      children: <Widget>[
+                        Text('${_maxValue.toInt()}'),
+                        Expanded(
+                          child: Container(
+                            width: 6,
+                            margin: EdgeInsets.symmetric(vertical: 10),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [CustomCupertinoColors.systemRed, CustomCupertinoColors.systemGreen],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Text('${(_minValue.isFinite) ? _minValue.toInt() : 0}'),
+                      ],
                     ),
                   ),
-                ),
-                Text('${_minValue.toInt()}'),
-              ],
+                  Container(
+                    alignment: Alignment.center,
+                    margin: EdgeInsets.only(top: 10),
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: CustomCupertinoColors.black.withOpacity(.4),
+                          blurRadius: 12,
+                        ),
+                      ],
+                      color: CustomCupertinoColors.white,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Text(_unitLabel),
+                  ),
+                ],
+              ),
             ),
           ),
           Center(

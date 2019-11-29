@@ -148,7 +148,9 @@ class RawTimedItem {
     try {
       // Date and time
       rawDateTime = rawContent.split('\t')[0];
-      gmtDateTime = DateTime.tryParse(rawDateTime);
+      
+      // UTC
+      gmtDateTime = DateTime.tryParse(rawDateTime + 'z');
     } catch (ex) {
       logger.w('Error while parsing log line date/time: Input was $rawDateTime. Error: ${ex.toString}.');
       return false;

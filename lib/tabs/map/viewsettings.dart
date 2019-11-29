@@ -1,3 +1,4 @@
+import 'package:azsphere_obd_app/tabs/settings/carproperties.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -74,6 +75,32 @@ class _MapViewSettingsState extends State<MapViewSettings> {
             child: CupertinoSegmentedControl<int>(
               onValueChanged: (int selectedDataType) {
                 logger.d('Selected data type is now ${widget.dataTypeChoices[selectedDataType]}.');
+                if (selectedDataType == 3 && car.fuel.massAirFuelRatio == 0.0) {
+                  // Show dialog to user
+                  showCupertinoDialog(
+                    context: context,
+                    builder: (BuildContext context) => new CupertinoAlertDialog(
+                      title: new Text("Fuel not selected"),
+                      content: new Text("Please select a valid fuel before continuing."),
+                      actions: [
+                        CupertinoDialogAction(
+                          isDefaultAction: true,
+                          child: new Text("Select fuel"),
+                          onPressed: () {
+                            Navigator.of(context, rootNavigator: true).push(
+                              CupertinoPageRoute(
+                                builder: (context) => SettingsCarProperties(
+                                  title: 'Vehicle information',
+                                  previousTitle: widget.title,
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      ],
+                    ),
+                  );
+                }
                 setState(() {
                   widget.data.mapDataType = selectedDataType;
                   appSettings.saveMapSettings();

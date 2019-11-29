@@ -108,11 +108,11 @@ class _MainPageState extends State<MainPage> {
             activeIcon: Icon(CustomCupertinoIcons.navigation_circled_solid),
             title: Text('Map'),
           ),
-          BottomNavigationBarItem(
+          /*BottomNavigationBarItem(
             icon: Icon(CustomCupertinoIcons.pie_chart),
             activeIcon: Icon(CustomCupertinoIcons.pie_chart_solid),
             title: Text('Data'),
-          ),
+          ),*/
           BottomNavigationBarItem(
             icon: Icon(CustomCupertinoIcons.dashboard),
             activeIcon: Icon(CustomCupertinoIcons.dashboard_solid),
@@ -137,19 +137,19 @@ class _MainPageState extends State<MainPage> {
             return CupertinoTabView(builder: (context) {
               return MapTab(title: 'Map');
             });
-          case 2:
+          /*case 2:
             return CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
                 child: Center(
                   child: Text('3'),
                 ),
               );
-            });
-          case 3:
+            });*/
+          case 2:
             return CupertinoTabView(builder: (context) {
               return DashboardTab(title: 'Dashboard');
             });
-          case 4:
+          case 3:
           default:
             return CupertinoTabView(builder: (context) {
               return SettingsTab(title: 'Settings');
