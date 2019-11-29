@@ -16,16 +16,19 @@ class MapViewSettingsDataAdapter extends TypeAdapter<MapViewSettingsData> {
     return MapViewSettingsData(
       showMyLocation: fields[0] as bool,
       mapType: fields[1] as int,
+      mapDataType: fields[2] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, MapViewSettingsData obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.showMyLocation)
       ..writeByte(1)
-      ..write(obj.mapType);
+      ..write(obj.mapType)
+      ..writeByte(2)
+      ..write(obj.mapDataType);
   }
 }

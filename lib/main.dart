@@ -30,8 +30,8 @@ void main() async {
   Hive.init('${directory.path}/hive');
 
   // Adapters (one-time registration)
-  Hive.registerAdapter(VehicleAdapter(), HIVE_VEHICLE_ADAPTER_ID);
   Hive.registerAdapter(FuelAdapter(), HIVE_FUEL_ADAPTER_ID);
+  Hive.registerAdapter(VehicleAdapter(), HIVE_VEHICLE_ADAPTER_ID);
   Hive.registerAdapter(MapViewSettingsDataAdapter(), HIVE_MAP_VIEW_SETTINGS_ADAPTER_ID);
   Hive.registerAdapter(RawLogItemTypeAdapter(), HIVE_RAW_LOG_ITEM_ADAPTER_ID);
   Hive.registerAdapter(LogSessionAdapter(), HIVE_LOG_SESSION_ADAPTER_ID);
@@ -108,11 +108,11 @@ class _MainPageState extends State<MainPage> {
             activeIcon: Icon(CustomCupertinoIcons.navigation_circled_solid),
             title: Text('Map'),
           ),
-          BottomNavigationBarItem(
+          /*BottomNavigationBarItem(
             icon: Icon(CustomCupertinoIcons.pie_chart),
             activeIcon: Icon(CustomCupertinoIcons.pie_chart_solid),
             title: Text('Data'),
-          ),
+          ),*/
           BottomNavigationBarItem(
             icon: Icon(CustomCupertinoIcons.dashboard),
             activeIcon: Icon(CustomCupertinoIcons.dashboard_solid),
@@ -137,19 +137,19 @@ class _MainPageState extends State<MainPage> {
             return CupertinoTabView(builder: (context) {
               return MapTab(title: 'Map');
             });
-          case 2:
+          /*case 2:
             return CupertinoTabView(builder: (context) {
               return CupertinoPageScaffold(
                 child: Center(
                   child: Text('3'),
                 ),
               );
-            });
-          case 3:
+            });*/
+          case 2:
             return CupertinoTabView(builder: (context) {
               return DashboardTab(title: 'Dashboard');
             });
-          case 4:
+          case 3:
           default:
             return CupertinoTabView(builder: (context) {
               return SettingsTab(title: 'Settings');

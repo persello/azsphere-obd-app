@@ -7,20 +7,16 @@ import 'logdata.dart';
 
 part 'vehicle.g.dart';
 
-// TODO: FIX FUEL TYPE NOT BEING RESTORED!!
-
 @HiveType()
 class Vehicle {
-  Vehicle({this.brand, this.model, this.vin, this.fuel}) {
-    fuel = CommonFuels.undefined;
-
+  Vehicle({this.brand, this.model, this.vin, this.fuel = CommonFuels.undefined}) {
     // logger.v('Vehicle constructor called, opening "vehicle-data" Hive box.');
     _hiveReady = _getVehicleBox();
   }
 
   Future _getVehicleBox() async {
     if (!Hive.isBoxOpen('vehicle-data')) {
-      storedVehicleData = await Hive.openBox('vehicle-data');
+      storedVehicleData = await Hive.openBox('vehicle-data', lazy: true);
     } else {
       storedVehicleData = Hive.box('vehicle-data');
     }
@@ -58,6 +54,7 @@ class Vehicle {
     logger.i('Starting download process.');
 
     if (onDownloadProgressUpdate != null) onDownloadProgressUpdate(0);
+    parseStarted = false;
 
     // Step 1: Get last file name.
     globalScanner.onLastFileNumberReceived = _fileNumberReceived;
@@ -85,7 +82,7 @@ class Vehicle {
     for (RemoteFile f in knownFiles) {
       if (f.name == fileName) {
         // Same name found
-        if (f.size == fileSize) {
+        if (f.size == fileSize + 1) {
           // Same info
           _fileMatchCounter++;
         } else {
@@ -128,7 +125,7 @@ class Vehicle {
       if (skip) logger.i('All file info present. Other files can be skipped.');
     }
 
-    if (fileName != '0.LOG' && !skip) {
+    if (fileName.toUpperCase() != '0.LOG' && !skip) {
       int nextFileNumber = int.parse(fileName.split('.')[0]) - 1;
       globalScanner.requestFileSize(nextFileNumber);
     } else {
@@ -156,6 +153,8 @@ class Vehicle {
     }
   }
 
+  bool parseStarted = false;
+  int lastFileNumber = 0;
   void _fileContentReceived(OBDScanner scanner, RemoteFile file) {
     logger.v('${file.name} received.');
 
@@ -164,7 +163,9 @@ class Vehicle {
 
     // Step 7: Consolidate with downloadQueue list
     for (RemoteFile f in downloadQueue) {
-      if (f.name == file.name.toUpperCase()) {
+      if (f.name.toUpperCase() == file.name.toUpperCase()) {
+        if (f.downloadedBytes > 0) break;
+
         f
           ..content = file.content
           ..downloadedBytes = file.downloadedBytes;
@@ -179,6 +180,16 @@ class Vehicle {
       if (f.downloadedBytes == 0 && !f.asked) {
         f.asked = true;
         nextFileNumber = int.tryParse(f.name.split('.')[0]);
+        lastFileNumber = nextFileNumber ?? lastFileNumber;
+        break;
+      }
+    }
+
+    // Step 9: Check when all the files have been downloaded
+    int notDownloadedFiles = 0;
+    for (RemoteFile f in downloadQueue) {
+      if (!f.asked || !(f.downloadedBytes > 0)) {
+        notDownloadedFiles++;
         break;
       }
     }
@@ -186,7 +197,9 @@ class Vehicle {
     if (nextFileNumber != null) {
       logger.v('Asking $nextFileNumber.log\'s contents.');
       globalScanner.requestFileContent(nextFileNumber);
-    } else {
+
+      // We received the last available file
+    } else if (notDownloadedFiles <= 1) {
       logger.i('Download finished.');
 
       // Consolidate download list with knownFiles
@@ -196,11 +209,36 @@ class Vehicle {
         knownFiles[destIndex] = source;
       }
 
-      // Save to hive
-      save();
+      // Create a buffer with the contents of all the downloaded files
+      StringBuffer stringBuffer = new StringBuffer();
+
+      for (RemoteFile f in downloadQueue) {
+        stringBuffer.write(f.content);
+      }
+
+      if (!parseStarted) {
+        parseAndSave(stringBuffer);
+      }
 
       if (onDownloadProgressUpdate != null) onDownloadProgressUpdate(1);
     }
+  }
+
+  void parseAndSave(StringBuffer stringBuffer) {
+    // Convert to sessions
+    logSessions.addAll(SessionImporter.logSessionListFromString(stringBuffer.toString(), checkItemDateTime));
+    parseStarted = true;
+    // Save to hive
+    save();
+  }
+
+  bool checkItemDateTime(DateTime input) {
+    for (LogSession ls in logSessions) {
+      if (input.compareTo(ls.stopGmtDateTime) < 0 && input.compareTo(ls.startGmtDateTime) > 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   void save() async {
@@ -209,31 +247,39 @@ class Vehicle {
     // Wait for hive initialization
     await this.hiveReady;
 
-    storedVehicleData.put('vehicle', this);
+    await storedVehicleData.put('vehicle', this);
 
     logger.d('Image path is "${this.imagePath}.');
   }
 
-  Future<Vehicle> restore() async {
+  void restore() async {
     logger.v('Restoring vehicle data.');
 
-    Vehicle returnCar = new Vehicle();
-
     // Wait for hive initialization
-    await this.hiveReady;
+    Vehicle v = new Vehicle();
 
-    returnCar = storedVehicleData.get('vehicle', defaultValue: new Vehicle());
+    await this.hiveReady;
+    await v.hiveReady;
+
+    v = await storedVehicleData.get('vehicle', defaultValue: new Vehicle());
+
+    this
+      ..fuel = v.fuel
+      ..brand = v.brand
+      ..model = v.model
+      ..imagePath = v.imagePath
+      ..knownFiles = v.knownFiles
+      ..logSessions = v.logSessions
+      ..vin = v.vin;
 
     // CommonFuel index
-    if (returnCar.fuel.name == null) {
-      returnCar.fuel = CommonFuels.undefined;
+    if (this.fuel.name == null) {
+      this.fuel = CommonFuels.undefined;
     }
 
-    logger.d('Restored fuel is ${returnCar.fuel.name}.');
+    logger.d('Restored fuel is ${this.fuel.name}.');
 
-    logger.d('Restored image path is ${returnCar.imagePath}.');
-
-    return returnCar;
+    logger.d('Restored image path is ${this.imagePath}.');
   }
 }
 

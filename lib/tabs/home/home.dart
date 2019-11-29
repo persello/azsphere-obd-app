@@ -9,6 +9,7 @@ import 'package:azsphere_obd_app/ioscustomcontrols.dart';
 import 'package:azsphere_obd_app/tabs/settings/carproperties.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:wifi/wifi.dart';
 
 import '../../globals.dart';
@@ -31,9 +32,39 @@ class _HomeTabState extends State<HomeTab> {
   int lastIpByteTried = 0;
   bool lastScanWasDefaultIp = false;
   Timer rtDataTimer;
+  Timer downloadWatchdogTimer;
 
   int currentFilesSize = 0;
   double syncProgress = 0;
+
+  double lastPercentage = 0;
+  void downloadWatchdog(Timer t) {
+    if (syncInProgress && lastPercentage == syncProgress) {
+      t.cancel();
+      setState(() {
+        syncInProgress = false;
+      });
+
+      // Show dialog to user
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) => new CupertinoAlertDialog(
+          title: new Text("Download failed"),
+          content: new Text("An error occurred during the download process. All the downloaded data will now be processed."),
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              child: new Text("Continue"),
+              onPressed: () {
+                Navigator.pop(context);
+                _isDisconnectionDialogShown = false;
+              },
+            )
+          ],
+        ),
+      );
+    }
+  }
 
   // TODO: Create a list of pollable messages
 
@@ -60,6 +91,8 @@ class _HomeTabState extends State<HomeTab> {
     scanner.sendMessage(TCPMessage(header: MessageHeader_SDSize));
     scanner.sendMessage(TCPMessage(header: MessageHeader_SDMounted));
   }
+
+  bool _isDisconnectionDialogShown = false;
 
   /// Called when the current scanner instance changes its connection status
   void scannerConnectionChanged(OBDScanner scanner, OBDScannerConnectionStatus status) async {
@@ -127,6 +160,29 @@ class _HomeTabState extends State<HomeTab> {
         scanner == globalScanner) {
       logger.w('Restarting scan after disconnection or not found.');
 
+      if (!_isDisconnectionDialogShown) {
+        _isDisconnectionDialogShown = true;
+
+        // Show dialog to user
+        showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) => new CupertinoAlertDialog(
+            title: new Text("Connection changed"),
+            content: new Text("The device closed the connection after an unexpected error."),
+            actions: [
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                child: new Text("Retry connection"),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _isDisconnectionDialogShown = false;
+                },
+              )
+            ],
+          ),
+        );
+      }
+
       // Not syncing anymore
       syncInProgress = false;
 
@@ -167,7 +223,7 @@ class _HomeTabState extends State<HomeTab> {
 
       await scanner.restoreLastIpAddress();
 
-      // TODO: Not restored
+      // TODO: Not restored?
 
       logger.d('The last IP of the device was ${scanner.ipAddress}.');
 
@@ -182,8 +238,7 @@ class _HomeTabState extends State<HomeTab> {
 
   void getCarFromMemory() async {
     logger.i('Getting car properties from storage.');
-    Vehicle x = new Vehicle();
-    car = await x.restore();
+    car.restore();
     setState(() {
       car = car;
       car.onDownloadProgressUpdate = downloadProgressReceived;
@@ -209,7 +264,7 @@ class _HomeTabState extends State<HomeTab> {
       if (progress == 1) {
         syncInProgress = false;
       }
-      
+
       syncProgress = progress;
     });
   }
@@ -379,7 +434,7 @@ class _HomeTabState extends State<HomeTab> {
                       child: Text(
                         globalScanner?.status == OBDScannerConnectionStatus.STATUS_CONNECTED
                             ? globalScanner?.sdCardMounted ?? 0
-                                ? 'Your data uses ${OBDScanner.byteSizeToString(currentFilesSize)} out of ${OBDScanner.byteSizeToString(1024 * globalScanner?.sdCardSize ?? 0)} available in the card.'
+                                ? 'Your data uses ${OBDScanner.byteSizeToString(currentFilesSize)} out of ${OBDScanner.byteSizeToString(1024 * globalScanner?.sdCardSize ?? 0)} available in the device\'s card.'
                                 : 'Please insert a FAT or exFAT microSD card in the slot.'
                             : 'The device is disconnected.',
                         overflow: TextOverflow.fade,
@@ -392,8 +447,10 @@ class _HomeTabState extends State<HomeTab> {
                       child: CircleProgressBar(
                         backgroundColor: CustomCupertinoColors.systemGray5,
                         foregroundColor: CustomCupertinoColors.systemBlue,
-                        text: 'AA',
-                        value: (globalScanner?.sdCardMounted ?? false) ? currentFilesSize / (1024 * (globalScanner?.sdCardSize ?? double.infinity)) : 0,
+                        thickness: 2,
+                        value: (globalScanner?.sdCardMounted ?? false)
+                            ? currentFilesSize / (1024 * (globalScanner?.sdCardSize ?? double.infinity))
+                            : 0,
                       ),
                     ),
                   ],
@@ -411,7 +468,7 @@ class _HomeTabState extends State<HomeTab> {
                       Container(
                         width: 200,
                         child: Text(
-                          'Sync in progress...\r\n01:13 remaining.',
+                          'Sync in progress...',
                           overflow: TextOverflow.fade,
                           style: CustomCupertinoTextStyles.blackStyle,
                         ),
@@ -422,6 +479,7 @@ class _HomeTabState extends State<HomeTab> {
                         child: CircleProgressBar(
                           backgroundColor: CustomCupertinoColors.systemGray5,
                           foregroundColor: CustomCupertinoColors.systemYellow,
+                          thickness: 2,
                           value: syncProgress,
                         ),
                       ),
@@ -440,7 +498,9 @@ class _HomeTabState extends State<HomeTab> {
                           Container(
                             width: 200,
                             child: Text(
-                              'Most recent data is from yesterday, 11:30.',
+                              car.logSessions.length == 0
+                                  ? 'Sync your device to get some data.'
+                                  : 'Most recent data is from ${DateFormat.yMMMMd('en_US').add_jm().format(car.logSessions.last.stopGmtDateTime.toLocal())}.',
                               overflow: TextOverflow.fade,
                             ),
                           ),
@@ -459,6 +519,9 @@ class _HomeTabState extends State<HomeTab> {
                                       ? () {
                                           // Start sync
                                           logger.i('Sync button pressed.');
+
+                                          downloadWatchdogTimer =
+                                              new Timer.periodic(new Duration(seconds: 20), downloadWatchdog);
 
                                           car.askRemoteLogs();
 
