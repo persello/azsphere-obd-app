@@ -7,16 +7,17 @@ import 'logdata.dart';
 
 part 'vehicle.g.dart';
 
-@HiveType()
+@HiveType(typeId: 2)
 class Vehicle {
-  Vehicle({this.brand, this.model, this.vin, this.fuel = CommonFuels.undefined}) {
+  Vehicle(
+      {this.brand, this.model, this.vin, this.fuel = CommonFuels.undefined}) {
     // logger.v('Vehicle constructor called, opening "vehicle-data" Hive box.');
     _hiveReady = _getVehicleBox();
   }
 
   Future _getVehicleBox() async {
     if (!Hive.isBoxOpen('vehicle-data')) {
-      storedVehicleData = await Hive.openBox('vehicle-data', lazy: true);
+      storedVehicleData = await Hive.openBox('vehicle-data');
     } else {
       storedVehicleData = Hive.box('vehicle-data');
     }
@@ -99,7 +100,8 @@ class Vehicle {
 
     if (!found) {
       // Add the file info to the list
-      knownFiles.add(new RemoteFile(name: fileName, size: fileSize == 0 ? 0 : fileSize + 1));
+      knownFiles.add(new RemoteFile(
+          name: fileName, size: fileSize == 0 ? 0 : fileSize + 1));
       _fileMatchCounter = 0;
     }
 
@@ -130,9 +132,10 @@ class Vehicle {
       globalScanner.requestFileSize(nextFileNumber);
     } else {
       // Step 5: At the end, sort list and compute download
-      knownFiles
-          .sort((a, b) => (int.tryParse(a.name.split('.')[0]).compareTo(int.tryParse(b.name.split('.')[0]))));
-      logger.i('${knownFiles.length} files\' info downloaded. Computing download queue.');
+      knownFiles.sort((a, b) => (int.tryParse(a.name.split('.')[0])
+          .compareTo(int.tryParse(b.name.split('.')[0]))));
+      logger.i(
+          '${knownFiles.length} files\' info downloaded. Computing download queue.');
 
       downloadQueue.clear();
       totalDownloadSize = 0;
@@ -149,7 +152,8 @@ class Vehicle {
 
       // Step 6: Start downloading the first file
       globalScanner.onFileContentReceived = _fileContentReceived;
-      globalScanner.requestFileContent(int.tryParse(downloadQueue.first.name.split('.')[0]));
+      globalScanner.requestFileContent(
+          int.tryParse(downloadQueue.first.name.split('.')[0]));
     }
   }
 
@@ -158,7 +162,8 @@ class Vehicle {
   void _fileContentReceived(OBDScanner scanner, RemoteFile file) {
     logger.v('${file.name} received.');
 
-    if (onDownloadProgressUpdate != null) onDownloadProgressUpdate(totalDownloadedBytes / totalDownloadSize);
+    if (onDownloadProgressUpdate != null)
+      onDownloadProgressUpdate(totalDownloadedBytes / totalDownloadSize);
     totalDownloadedBytes += file.downloadedBytes;
 
     // Step 7: Consolidate with downloadQueue list
@@ -204,8 +209,8 @@ class Vehicle {
 
       // Consolidate download list with knownFiles
       for (RemoteFile source in downloadQueue) {
-        int destIndex =
-            knownFiles.indexWhere((RemoteFile f) => (f.name.toUpperCase() == source.name.toUpperCase()));
+        int destIndex = knownFiles.indexWhere((RemoteFile f) =>
+            (f.name.toUpperCase() == source.name.toUpperCase()));
         knownFiles[destIndex] = source;
       }
 
@@ -226,7 +231,8 @@ class Vehicle {
 
   void parseAndSave(StringBuffer stringBuffer) {
     // Convert to sessions
-    logSessions.addAll(SessionImporter.logSessionListFromString(stringBuffer.toString(), checkItemDateTime));
+    logSessions.addAll(SessionImporter.logSessionListFromString(
+        stringBuffer.toString(), checkItemDateTime));
     parseStarted = true;
     // Save to hive
     save();
@@ -234,7 +240,8 @@ class Vehicle {
 
   bool checkItemDateTime(DateTime input) {
     for (LogSession ls in logSessions) {
-      if (input.compareTo(ls.stopGmtDateTime) < 0 && input.compareTo(ls.startGmtDateTime) > 0) {
+      if (input.compareTo(ls.stopGmtDateTime) < 0 &&
+          input.compareTo(ls.startGmtDateTime) > 0) {
         return false;
       }
     }
@@ -284,7 +291,7 @@ class Vehicle {
 }
 
 /// A class that represents a file on the remote device's SD card.
-@HiveType()
+@HiveType(typeId: 5)
 class RemoteFile {
   RemoteFile({this.name, this.size});
 

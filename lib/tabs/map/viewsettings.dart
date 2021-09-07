@@ -59,7 +59,8 @@ class _MapViewSettingsState extends State<MapViewSettings> {
           GenericListItem(
             child: CupertinoSegmentedControl<int>(
               onValueChanged: (int selectedMapType) {
-                logger.d('Selected map type is now ${MapType.values[selectedMapType]}.');
+                logger.d(
+                    'Selected map type is now ${MapType.values[selectedMapType]}.');
                 setState(() {
                   widget.data.mapType = selectedMapType;
                   appSettings.saveMapSettings();
@@ -74,14 +75,16 @@ class _MapViewSettingsState extends State<MapViewSettings> {
           GenericListItem(
             child: CupertinoSegmentedControl<int>(
               onValueChanged: (int selectedDataType) {
-                logger.d('Selected data type is now ${widget.dataTypeChoices[selectedDataType]}.');
+                logger.d(
+                    'Selected data type is now ${widget.dataTypeChoices[selectedDataType]}.');
                 if (selectedDataType == 3 && car.fuel.massAirFuelRatio == 0.0) {
                   // Show dialog to user
                   showCupertinoDialog(
                     context: context,
                     builder: (BuildContext context) => new CupertinoAlertDialog(
                       title: new Text("Fuel not selected"),
-                      content: new Text("Please select a valid fuel before continuing."),
+                      content: new Text(
+                          "Please select a valid fuel before continuing."),
                       actions: [
                         CupertinoDialogAction(
                           isDefaultAction: true,

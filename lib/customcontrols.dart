@@ -83,8 +83,10 @@ class CircleProgressBarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final Offset center = size.center(Offset.zero);
-    final Size constrainedSize = size - Offset(this.strokeWidth, this.strokeWidth);
-    final shortestSide = Math.min(constrainedSize.width, constrainedSize.height);
+    final Size constrainedSize =
+        size - Offset(this.strokeWidth, this.strokeWidth);
+    final shortestSide =
+        Math.min(constrainedSize.width, constrainedSize.height);
     final foregroundPaint = Paint()
       ..color = this.foregroundColor
       ..strokeWidth = this.strokeWidth
@@ -94,7 +96,8 @@ class CircleProgressBarPainter extends CustomPainter {
 
     // Start at the top. 0 radians represents the right edge
     final double startAngle = -((dashboardMode ? 5 : 2) * Math.pi * 0.25);
-    final double sweepAngle = (2 * Math.pi * (this.percentage ?? 0)) * bPercentage;
+    final double sweepAngle =
+        (2 * Math.pi * (this.percentage ?? 0)) * bPercentage;
 
     // Don't draw the background if we don't have a background color
     if (this.backgroundColor != null) {

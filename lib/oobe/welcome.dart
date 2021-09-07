@@ -51,7 +51,7 @@ class _WelcomePageState extends State<WelcomePage> {
                 Text(
                     'By communicating with an OBD adapter created with an Azure Sphere Starter Kit and an OBD-2 mikroBUS™ click, the data from your car\'s ECU (electronic control unit) can be analyzed by this application.',
                     textAlign: TextAlign.center),
-                    Text(
+                Text(
                     'By periodically downloading your data from the adapter we can show you some maps and charts with useful insights about your driving habits.',
                     textAlign: TextAlign.center),
               ],

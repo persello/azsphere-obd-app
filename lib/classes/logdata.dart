@@ -14,7 +14,8 @@ class SessionImporter {
       String input, bool Function(DateTime) itemDateTimeChecker) {
     List<RawTimedItem> temporaryItemBuffer = new List<RawTimedItem>();
 
-    logger.i('Importing session from string. String size is ${input.length} bytes.');
+    logger.i(
+        'Importing session from string. String size is ${input.length} bytes.');
 
     List<String> rawItems = input.split('\r\n');
 
@@ -28,7 +29,8 @@ class SessionImporter {
       }
     }
 
-    logger.i('${temporaryItemBuffer.length} out of ${rawItems.length} were correctly parsed.');
+    logger.i(
+        '${temporaryItemBuffer.length} out of ${rawItems.length} were correctly parsed.');
 
     logger.v('Sorting log item list chronologically.');
 
@@ -42,14 +44,19 @@ class SessionImporter {
 
     for (int i = 0; i < temporaryItemBuffer.length - 1; i++) {
       // Time difference greater than 2 minutes: split.
-      if (temporaryItemBuffer[i + 1].gmtDateTime.difference(temporaryItemBuffer[i].gmtDateTime).inMinutes >
+      if (temporaryItemBuffer[i + 1]
+              .gmtDateTime
+              .difference(temporaryItemBuffer[i].gmtDateTime)
+              .inMinutes >
           2) {
         // Prepare
         try {
           currentSession.complete = true;
           currentSession.normalizeDateTime();
-          currentSession.startGmtDateTime = currentSession.rawTimedData.first.gmtDateTime;
-          currentSession.stopGmtDateTime = currentSession.rawTimedData.last.gmtDateTime;
+          currentSession.startGmtDateTime =
+              currentSession.rawTimedData.first.gmtDateTime;
+          currentSession.stopGmtDateTime =
+              currentSession.rawTimedData.last.gmtDateTime;
           returnList.add(currentSession);
         } catch (ex) {
           logger.w('Error while splitting sessions: ${ex.toString}.');
@@ -68,8 +75,10 @@ class SessionImporter {
     try {
       currentSession.complete = true;
       currentSession.normalizeDateTime();
-      currentSession.startGmtDateTime = currentSession.rawTimedData.first.gmtDateTime;
-      currentSession.stopGmtDateTime = currentSession.rawTimedData.last.gmtDateTime;
+      currentSession.startGmtDateTime =
+          currentSession.rawTimedData.first.gmtDateTime;
+      currentSession.stopGmtDateTime =
+          currentSession.rawTimedData.last.gmtDateTime;
       returnList.add(currentSession);
     } catch (ex) {
       logger.w('Error while splitting sessions: ${ex.toString}.');
@@ -83,7 +92,7 @@ class SessionImporter {
 
 /// Represents all the logged data in a session.
 /// A session stops when the log stops for more than 2 minutes.
-@HiveType()
+@HiveType(typeId: 1)
 class LogSession {
   /// All the log items of the session with time information.
   @HiveField(0)
@@ -135,7 +144,7 @@ class LogSession {
 }
 
 /// A single log item with time information, with a single piece of information (like on the SD card).
-@HiveType()
+@HiveType(typeId: 3)
 class RawTimedItem {
   /// Populates the properties based on the raw string content.
   /// returns [true] if successful, [false] if not.
@@ -148,11 +157,12 @@ class RawTimedItem {
     try {
       // Date and time
       rawDateTime = rawContent.split('\t')[0];
-      
+
       // UTC
       gmtDateTime = DateTime.tryParse(rawDateTime + 'z');
     } catch (ex) {
-      logger.w('Error while parsing log line date/time: Input was $rawDateTime. Error: ${ex.toString}.');
+      logger.w(
+          'Error while parsing log line date/time: Input was $rawDateTime. Error: ${ex.toString}.');
       return false;
     }
 
@@ -176,11 +186,13 @@ class RawTimedItem {
           break;
       }
     } catch (ex) {
-      logger.w('Error while parsing log line type: Input was $rawType. Error: ${ex.toString}.');
+      logger.w(
+          'Error while parsing log line type: Input was $rawType. Error: ${ex.toString}.');
       return false;
     }
 
-    if ((textContent == null && numericContent == null) || gmtDateTime == null) {
+    if ((textContent == null && numericContent == null) ||
+        gmtDateTime == null) {
       return false;
     }
 
@@ -223,7 +235,7 @@ class RawTimedItem {
 }
 
 /// All the types of log items that can be found on an SD card log file.
-@HiveType()
+@HiveType(typeId: 4)
 enum RawLogItemType {
   @HiveField(0)
   Initializer,

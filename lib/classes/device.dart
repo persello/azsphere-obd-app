@@ -199,7 +199,8 @@ class OBDScanner {
   /// Sets the [_socket] variable and starts the [_pingTimer]
   /// if the operation is successful.
   void connect() {
-    Socket.connect(ipAddress, 15500, timeout: Duration(milliseconds: 150)).then((Socket s) {
+    Socket.connect(ipAddress, 15500, timeout: Duration(milliseconds: 150))
+        .then((Socket s) {
       _socket = s;
       _socket.listen(_newTCPData, onError: _socketError);
 
@@ -226,7 +227,8 @@ class OBDScanner {
       }
     }
 
-    if (DateTime.now().difference(lastSuccessfulPing) > new Duration(seconds: 5)) {
+    if (DateTime.now().difference(lastSuccessfulPing) >
+        new Duration(seconds: 5)) {
       closeConnection();
     } else {
       TCPMessage message = TCPMessage.fromString(MessageHeader_Ping);
@@ -249,11 +251,13 @@ class OBDScanner {
   }
 
   void requestFileSize(int fileNumber) {
-    this.sendMessage(new TCPMessage(header: MessageHeader_GetFileSize, arguments: '$fileNumber.log'));
+    this.sendMessage(new TCPMessage(
+        header: MessageHeader_GetFileSize, arguments: '$fileNumber.log'));
   }
 
   void requestFileContent(int fileNumber) {
-    this.sendMessage(new TCPMessage(header: MessageHeader_GetFileContent, arguments: '$fileNumber.log'));
+    this.sendMessage(new TCPMessage(
+        header: MessageHeader_GetFileContent, arguments: '$fileNumber.log'));
   }
 
   /// Called when all the operations on the socket are complete and it should be closed.
@@ -326,7 +330,8 @@ class OBDScanner {
       int indexOfReturn = _receiveBuffer.toString().indexOf('\r\n');
 
       // We consider the current message's string as the first part of the buffer, until the \r character
-      String currentMessageString = _receiveBuffer.toString().substring(0, indexOfReturn);
+      String currentMessageString =
+          _receiveBuffer.toString().substring(0, indexOfReturn);
 
       // Then we consider the remaining part
       String temp = _receiveBuffer.toString().substring(indexOfReturn + 2);
@@ -487,7 +492,8 @@ class OBDScanner {
             }
             // Otherwise we update only the parameters given by the scanned network list (RSSI, isCurrentlyAvailable)
             else {
-              networks[indexWithSameSSID].isCurrentlyAvailable = n.isCurrentlyAvailable;
+              networks[indexWithSameSSID].isCurrentlyAvailable =
+                  n.isCurrentlyAvailable;
               networks[indexWithSameSSID].rssi = n.rssi;
               networks[indexWithSameSSID].isProtected = n.isProtected;
             }
@@ -507,7 +513,9 @@ class OBDScanner {
           onLastFileNumberReceived(
               this,
               message.arguments.startsWith('O')
-                  ? int.tryParse(message.arguments.split('.')[0].substring(1)) ?? 0
+                  ? int.tryParse(
+                          message.arguments.split('.')[0].substring(1)) ??
+                      0
                   : 0);
         }
         break;
@@ -542,7 +550,8 @@ class OBDScanner {
           case 'O':
             // Error while reading (beginning)
             _fileDownloading = false;
-            if (onFileContentReceived != null) onFileContentReceived(this, _currentFile);
+            if (onFileContentReceived != null)
+              onFileContentReceived(this, _currentFile);
             break;
         }
         break;
