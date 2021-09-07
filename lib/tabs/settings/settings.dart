@@ -62,7 +62,11 @@ class _SettingsTabState extends State<SettingsTab> {
                   iconBackground: CustomCupertinoColors.systemGreen,
                   onPressed: () {
                     logger.i('Opening "Vehicle information" page.');
-                    Navigator.of(context, rootNavigator: true).push(CupertinoPageRoute(builder: (context) => SettingsCarProperties(title: 'Vehicle information', previousTitle: 'Settings')));
+                    Navigator.of(context, rootNavigator: true).push(
+                        CupertinoPageRoute(
+                            builder: (context) => SettingsCarProperties(
+                                title: 'Vehicle information',
+                                previousTitle: 'Settings')));
                   },
                 ),
                 ListSubMenu(

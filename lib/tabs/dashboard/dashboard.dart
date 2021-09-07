@@ -36,7 +36,8 @@ class _DashboardTabState extends State<DashboardTab> {
                   child: Container(
                     child: CircleProgressBar(
                       foregroundColor: CustomCupertinoColors.systemRed,
-                      backgroundColor: CustomCupertinoColors.systemRed.withOpacity(0.3),
+                      backgroundColor:
+                          CustomCupertinoColors.systemRed.withOpacity(0.3),
                       value: 0,
                       thickness: 18,
                       internalThickness: 18,
@@ -52,7 +53,8 @@ class _DashboardTabState extends State<DashboardTab> {
                   child: Container(
                     child: CircleProgressBar(
                       foregroundColor: CustomCupertinoColors.systemYellow,
-                      backgroundColor: CustomCupertinoColors.systemYellow.withOpacity(0.3),
+                      backgroundColor:
+                          CustomCupertinoColors.systemYellow.withOpacity(0.3),
                       value: 0,
                       thickness: 18,
                       internalThickness: 18,
@@ -68,7 +70,8 @@ class _DashboardTabState extends State<DashboardTab> {
                   child: Container(
                     child: CircleProgressBar(
                       foregroundColor: Color.fromARGB(255, 200, 242, 0),
-                      backgroundColor: Color.fromARGB(255, 200, 242, 0).withOpacity(0.3),
+                      backgroundColor:
+                          Color.fromARGB(255, 200, 242, 0).withOpacity(0.3),
                       value: 0,
                       thickness: 18,
                       internalThickness: 18,
@@ -101,7 +104,9 @@ class _DashboardTabState extends State<DashboardTab> {
                               ),
                             ),
                           ),
-                          Text('0', style: new TextStyle(fontSize: 48, fontWeight: FontWeight.w600)),
+                          Text('0',
+                              style: new TextStyle(
+                                  fontSize: 48, fontWeight: FontWeight.w600)),
                           SizedBox.fromSize(size: new Size(4, 12)),
                           Text(
                             'km/h',
@@ -136,7 +141,8 @@ class _DashboardTabState extends State<DashboardTab> {
                                   Text(
                                     'rpm',
                                     style: new TextStyle(
-                                        color: CustomCupertinoColors.white.withOpacity(.8),
+                                        color: CustomCupertinoColors.white
+                                            .withOpacity(.8),
                                         fontWeight: FontWeight.w300),
                                   ),
                                 ],
@@ -165,7 +171,8 @@ class _DashboardTabState extends State<DashboardTab> {
                                   Text(
                                     '%',
                                     style: new TextStyle(
-                                        color: CustomCupertinoColors.white.withOpacity(.8),
+                                        color: CustomCupertinoColors.white
+                                            .withOpacity(.8),
                                         fontWeight: FontWeight.w300),
                                   ),
                                 ],
@@ -223,10 +230,12 @@ class _DashboardTabState extends State<DashboardTab> {
                               style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w500,
-                                  color: CustomCupertinoColors.white.withOpacity(.8)),
+                                  color: CustomCupertinoColors.white
+                                      .withOpacity(.8)),
                             ),
                             Divider(
-                              color: CustomCupertinoColors.white.withOpacity(.4),
+                              color:
+                                  CustomCupertinoColors.white.withOpacity(.4),
                             ),
                             Center(
                               child: Text(
@@ -238,7 +247,8 @@ class _DashboardTabState extends State<DashboardTab> {
                               ),
                             ),
                             Divider(
-                              color: CustomCupertinoColors.white.withOpacity(.4),
+                              color:
+                                  CustomCupertinoColors.white.withOpacity(.4),
                             ),
                             Center(
                               child: Text(
@@ -246,7 +256,8 @@ class _DashboardTabState extends State<DashboardTab> {
                                 style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w300,
-                                    color: CustomCupertinoColors.white.withOpacity(.6),
+                                    color: CustomCupertinoColors.white
+                                        .withOpacity(.6),
                                     letterSpacing: 2),
                               ),
                             ),
@@ -261,7 +272,8 @@ class _DashboardTabState extends State<DashboardTab> {
                         decoration: new BoxDecoration(
                           boxShadow: [
                             BoxShadow(
-                              color: CustomCupertinoColors.systemTeal.withOpacity(.4),
+                              color: CustomCupertinoColors.systemTeal
+                                  .withOpacity(.4),
                               blurRadius: 32,
                             ),
                           ],
@@ -286,10 +298,12 @@ class _DashboardTabState extends State<DashboardTab> {
                               style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w500,
-                                  color: CustomCupertinoColors.white.withOpacity(.8)),
+                                  color: CustomCupertinoColors.white
+                                      .withOpacity(.8)),
                             ),
                             Divider(
-                              color: CustomCupertinoColors.white.withOpacity(.4),
+                              color:
+                                  CustomCupertinoColors.white.withOpacity(.4),
                             ),
                             Center(
                               child: Text(
@@ -301,7 +315,8 @@ class _DashboardTabState extends State<DashboardTab> {
                               ),
                             ),
                             Divider(
-                              color: CustomCupertinoColors.white.withOpacity(.4),
+                              color:
+                                  CustomCupertinoColors.white.withOpacity(.4),
                             ),
                             Center(
                               child: Text(
@@ -309,7 +324,8 @@ class _DashboardTabState extends State<DashboardTab> {
                                 style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w300,
-                                    color: CustomCupertinoColors.white.withOpacity(.6),
+                                    color: CustomCupertinoColors.white
+                                        .withOpacity(.6),
                                     letterSpacing: 2),
                               ),
                             ),
@@ -330,8 +346,10 @@ class _DashboardTabState extends State<DashboardTab> {
                         blurRadius: 32,
                       ),
                     ],
-                    gradient: LinearGradient(
-                        colors: <Color>[CustomCupertinoColors.systemRed, CustomCupertinoColors.systemOrange]),
+                    gradient: LinearGradient(colors: <Color>[
+                      CustomCupertinoColors.systemRed,
+                      CustomCupertinoColors.systemOrange
+                    ]),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   alignment: Alignment.topLeft,
@@ -382,7 +400,8 @@ class _DashboardTabState extends State<DashboardTab> {
                                   ),
                                   Row(
                                     textBaseline: TextBaseline.alphabetic,
-                                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.baseline,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
                                       Text(
@@ -412,7 +431,8 @@ class _DashboardTabState extends State<DashboardTab> {
                                   begin: Alignment.centerRight,
                                   end: Alignment.centerLeft,
                                   colors: [Colors.black, Colors.transparent],
-                                ).createShader(Rect.fromLTRB(50, 0, rect.width / 3, rect.height));
+                                ).createShader(Rect.fromLTRB(
+                                    50, 0, rect.width / 3, rect.height));
                               },
                               blendMode: BlendMode.dstIn,
                               child: Container(
@@ -420,14 +440,24 @@ class _DashboardTabState extends State<DashboardTab> {
                                 width: MediaQuery.of(context).size.width - 190,
                                 child: BezierChart(
                                   bezierChartScale: BezierChartScale.CUSTOM,
-                                  xAxisCustomValues: const [0, 5, 10, 15, 20, 25, 30, 35],
+                                  xAxisCustomValues: const [
+                                    0,
+                                    5,
+                                    10,
+                                    15,
+                                    20,
+                                    25,
+                                    30,
+                                    35
+                                  ],
                                   series: const [
                                     BezierLine(
                                       data: const [
                                         DataPoint<double>(value: 10, xAxis: 0),
                                         DataPoint<double>(value: 130, xAxis: 5),
                                         DataPoint<double>(value: 50, xAxis: 10),
-                                        DataPoint<double>(value: 150, xAxis: 15),
+                                        DataPoint<double>(
+                                            value: 150, xAxis: 15),
                                         DataPoint<double>(value: 75, xAxis: 20),
                                         DataPoint<double>(value: 0, xAxis: 25),
                                         DataPoint<double>(value: 5, xAxis: 30),
@@ -442,7 +472,9 @@ class _DashboardTabState extends State<DashboardTab> {
                                       xAxisTextStyle: TextStyle(fontSize: 0),
                                       footerHeight: 15,
                                       displayLinesXAxis: false,
-                                      contentWidth: MediaQuery.of(context).size.width - 150),
+                                      contentWidth:
+                                          MediaQuery.of(context).size.width -
+                                              150),
                                 ),
                               ),
                             ),

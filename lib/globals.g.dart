@@ -8,10 +8,13 @@ part of 'globals.dart';
 
 class MapViewSettingsDataAdapter extends TypeAdapter<MapViewSettingsData> {
   @override
+  final int typeId = 6;
+
+  @override
   MapViewSettingsData read(BinaryReader reader) {
-    var numOfFields = reader.readByte();
-    var fields = <int, dynamic>{
-      for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return MapViewSettingsData(
       showMyLocation: fields[0] as bool,
@@ -31,4 +34,14 @@ class MapViewSettingsDataAdapter extends TypeAdapter<MapViewSettingsData> {
       ..writeByte(2)
       ..write(obj.mapDataType);
   }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MapViewSettingsDataAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }

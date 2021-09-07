@@ -10,6 +10,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' as Foundation;
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -18,25 +19,9 @@ import 'classes/vehicle.dart';
 import 'globals.dart';
 
 void main() async {
+  runApp(MyApp());
+
   logger.i('Welcome to Azure Sphere OBD Driving Stats!');
-
-  logger.i('Setting up Hive path and adapters.');
-
-  // App folder
-  Directory directory;
-  directory = await getApplicationDocumentsDirectory();
-
-  // Database location
-  Hive.init('${directory.path}/hive');
-
-  // Adapters (one-time registration)
-  Hive.registerAdapter(FuelAdapter(), HIVE_FUEL_ADAPTER_ID);
-  Hive.registerAdapter(VehicleAdapter(), HIVE_VEHICLE_ADAPTER_ID);
-  Hive.registerAdapter(MapViewSettingsDataAdapter(), HIVE_MAP_VIEW_SETTINGS_ADAPTER_ID);
-  Hive.registerAdapter(RawLogItemTypeAdapter(), HIVE_RAW_LOG_ITEM_ADAPTER_ID);
-  Hive.registerAdapter(LogSessionAdapter(), HIVE_LOG_SESSION_ADAPTER_ID);
-  Hive.registerAdapter(RawTimedItemAdapter(), HIVE_RAW_TIMED_ITEM_ADAPTER_ID);
-  Hive.registerAdapter(RemoteFileAdapter(), HIVE_REMOTE_FILE_ADAPTER_ID);
 
   if (Foundation.kDebugMode) {
     logger.w('App is running in debug mode.');
@@ -46,9 +31,7 @@ void main() async {
   }
 
   // Limit to vertical orientation until layout is responsive.
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-    runApp(new MyApp());
-  });
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   logger.v('Preferred orientation is now portrait only.');
 
@@ -57,12 +40,25 @@ void main() async {
   ));
 
   logger.v('Status bar is set to transparent.');
+
+  logger.i('Setting up Hive path and adapters.');
+
+  // Database location
+  await Hive.initFlutter();
+
+  // Adapters (one-time registration)
+  Hive.registerAdapter(FuelAdapter());
+  Hive.registerAdapter(VehicleAdapter());
+  Hive.registerAdapter(MapViewSettingsDataAdapter());
+  Hive.registerAdapter(RawLogItemTypeAdapter());
+  Hive.registerAdapter(LogSessionAdapter());
+  Hive.registerAdapter(RawTimedItemAdapter());
+  Hive.registerAdapter(RemoteFileAdapter());
 }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
-  
   Widget build(BuildContext context) {
     logger.i('MyApp started.');
 
@@ -101,12 +97,12 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.home),
             activeIcon: Icon(CustomCupertinoIcons.home_solid),
-            title: Text('Home'),
+            label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(CustomCupertinoIcons.navigation_circled),
             activeIcon: Icon(CustomCupertinoIcons.navigation_circled_solid),
-            title: Text('Map'),
+            label: 'Map',
           ),
           /*BottomNavigationBarItem(
             icon: Icon(CustomCupertinoIcons.pie_chart),
@@ -116,12 +112,12 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(
             icon: Icon(CustomCupertinoIcons.dashboard),
             activeIcon: Icon(CustomCupertinoIcons.dashboard_solid),
-            title: Text('Dashboard'),
+            label: 'Dashboard',
           ),
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.settings),
             activeIcon: Icon(CupertinoIcons.settings_solid),
-            title: Text('Settings'),
+            label: 'Settings',
           ),
         ],
       ),

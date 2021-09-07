@@ -8,6 +8,9 @@ part of 'logdata.dart';
 
 class RawLogItemTypeAdapter extends TypeAdapter<RawLogItemType> {
   @override
+  final int typeId = 4;
+
+  @override
   RawLogItemType read(BinaryReader reader) {
     switch (reader.readByte()) {
       case 0:
@@ -41,7 +44,7 @@ class RawLogItemTypeAdapter extends TypeAdapter<RawLogItemType> {
       case 14:
         return RawLogItemType.None;
       default:
-        return null;
+        return RawLogItemType.Initializer;
     }
   }
 
@@ -95,14 +98,27 @@ class RawLogItemTypeAdapter extends TypeAdapter<RawLogItemType> {
         break;
     }
   }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RawLogItemTypeAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }
 
 class LogSessionAdapter extends TypeAdapter<LogSession> {
   @override
+  final int typeId = 1;
+
+  @override
   LogSession read(BinaryReader reader) {
-    var numOfFields = reader.readByte();
-    var fields = <int, dynamic>{
-      for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return LogSession()
       ..rawTimedData = (fields[0] as List)?.cast<RawTimedItem>()
@@ -124,14 +140,27 @@ class LogSessionAdapter extends TypeAdapter<LogSession> {
       ..writeByte(3)
       ..write(obj.complete);
   }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LogSessionAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }
 
 class RawTimedItemAdapter extends TypeAdapter<RawTimedItem> {
   @override
+  final int typeId = 3;
+
+  @override
   RawTimedItem read(BinaryReader reader) {
-    var numOfFields = reader.readByte();
-    var fields = <int, dynamic>{
-      for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return RawTimedItem()
       ..gmtDateTime = fields[0] as DateTime
@@ -153,4 +182,14 @@ class RawTimedItemAdapter extends TypeAdapter<RawTimedItem> {
       ..writeByte(3)
       ..write(obj.textContent);
   }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RawTimedItemAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }

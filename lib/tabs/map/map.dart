@@ -124,7 +124,6 @@ class _MapTabState extends State<MapTab> {
       for (RawTimedItem item in session.rawTimedData) {
         if (item.type == interestingDataType) {
           if (lastLoc != null && mapBounds.contains(lastLoc)) {
-
             // Value calculation
             double value = appSettings.mapViewSettingsData.mapDataType == 3
                 ? calculateLKM(item.numericContent, car.fuel, lastSpeed)
@@ -132,7 +131,8 @@ class _MapTabState extends State<MapTab> {
             _maxValue = value > _maxValue ? value : _maxValue;
 
             // When in RPM mode, filter everything under 600
-            if (appSettings.mapViewSettingsData.mapDataType == 2 && item.numericContent > 600) {
+            if (appSettings.mapViewSettingsData.mapDataType == 2 &&
+                item.numericContent > 600) {
               _minValue = value < _minValue ? value : _minValue;
             } else if (appSettings.mapViewSettingsData.mapDataType != 2) {
               _minValue = value < _minValue ? value : _minValue;
@@ -161,7 +161,8 @@ class _MapTabState extends State<MapTab> {
     int addedMarkers = 0;
     int lastStateSet = 0;
 
-    logger.i('There should be $markersInView markers in view, divider is $divider.');
+    logger.i(
+        'There should be $markersInView markers in view, divider is $divider.');
 
     for (LogSession session in car.logSessions) {
       for (RawTimedItem item in session.rawTimedData) {
@@ -169,7 +170,8 @@ class _MapTabState extends State<MapTab> {
           // Add only when in view
           if (lastLoc != null && mapBounds.contains(lastLoc)) {
             // Up to about 500 markers
-            if ((currentItemDivider += divider) > addedMarkers && item.numericContent > 3) {
+            if ((currentItemDivider += divider) > addedMarkers &&
+                item.numericContent > 3) {
               // Calculate value for fuel consumption
               double value = appSettings.mapViewSettingsData.mapDataType == 3
                   ? calculateLKM(item.numericContent, car.fuel, lastSpeed)
@@ -177,18 +179,22 @@ class _MapTabState extends State<MapTab> {
 
               // Calculate dot color
               // 0 -> Green (0), maxValue -> Red (1)
-              double colorFactor = (value - _minValue) / (_maxValue - _minValue);
+              double colorFactor =
+                  (value - _minValue) / (_maxValue - _minValue);
               if (colorFactor > 1) colorFactor = 1;
               if (colorFactor.isNaN || colorFactor < 0) colorFactor = 0;
 
               // Calculate the radius
-              double cRadius =
-                  0.2851041 + (268.3408 - 0.2851041) / (1 + Math.pow((_currentZoom / 9.965059), 8.10246));
+              double cRadius = 0.2851041 +
+                  (268.3408 - 0.2851041) /
+                      (1 + Math.pow((_currentZoom / 9.965059), 8.10246));
 
               Circle c = new Circle(
                   center: lastLoc,
                   radius: cRadius,
-                  fillColor: Color.alphaBlend(CustomCupertinoColors.systemRed.withOpacity(colorFactor),
+                  fillColor: Color.alphaBlend(
+                          CustomCupertinoColors.systemRed
+                              .withOpacity(colorFactor),
                           CustomCupertinoColors.systemGreen)
                       .withOpacity(0.2 + _currentZoom / 30),
                   strokeWidth: 0,
@@ -197,7 +203,8 @@ class _MapTabState extends State<MapTab> {
 
               // Add markers in blocks of 100
               if (lastStateSet < (addedMarkers - 100)) {
-                logger.i('Partial markers: $addedMarkers, previous was $lastStateSet');
+                logger.i(
+                    'Partial markers: $addedMarkers, previous was $lastStateSet');
                 lastStateSet = addedMarkers;
 
                 setState(() {
@@ -345,10 +352,12 @@ class _MapTabState extends State<MapTab> {
       child: Stack(
         children: <Widget>[
           GoogleMap(
-            initialCameraPosition: CameraPosition(target: LatLng(0, 0), zoom: 1),
+            initialCameraPosition:
+                CameraPosition(target: LatLng(0, 0), zoom: 1),
             onMapCreated: _onMapCreated,
             onCameraIdle: () {
-              _mapTimer = new Timer(Duration(milliseconds: 500), calculateDataMarkers);
+              _mapTimer =
+                  new Timer(Duration(milliseconds: 500), calculateDataMarkers);
             },
             onCameraMove: (CameraPosition c) {
               _mapTimer.cancel();
@@ -396,7 +405,10 @@ class _MapTabState extends State<MapTab> {
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
-                                colors: [CustomCupertinoColors.systemRed, CustomCupertinoColors.systemGreen],
+                                colors: [
+                                  CustomCupertinoColors.systemRed,
+                                  CustomCupertinoColors.systemGreen
+                                ],
                               ),
                             ),
                           ),

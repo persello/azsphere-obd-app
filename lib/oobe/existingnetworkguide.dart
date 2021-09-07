@@ -66,7 +66,7 @@ class _ExistingNetworkGuidePageState extends State<ExistingNetworkGuidePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 CupertinoButton(
-                    child: Text('Back'),  
+                    child: Text('Back'),
                     onPressed: () {
                       logger.i('Navigating back.');
                       Navigator.of(context, rootNavigator: true).pop();

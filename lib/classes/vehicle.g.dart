@@ -8,10 +8,13 @@ part of 'vehicle.dart';
 
 class VehicleAdapter extends TypeAdapter<Vehicle> {
   @override
+  final int typeId = 2;
+
+  @override
   Vehicle read(BinaryReader reader) {
-    var numOfFields = reader.readByte();
-    var fields = <int, dynamic>{
-      for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Vehicle(
       brand: fields[1] as String,
@@ -43,14 +46,27 @@ class VehicleAdapter extends TypeAdapter<Vehicle> {
       ..writeByte(6)
       ..write(obj.knownFiles);
   }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VehicleAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }
 
 class RemoteFileAdapter extends TypeAdapter<RemoteFile> {
   @override
+  final int typeId = 5;
+
+  @override
   RemoteFile read(BinaryReader reader) {
-    var numOfFields = reader.readByte();
-    var fields = <int, dynamic>{
-      for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return RemoteFile(
       name: fields[0] as String,
@@ -76,4 +92,14 @@ class RemoteFileAdapter extends TypeAdapter<RemoteFile> {
       ..writeByte(4)
       ..write(obj.content);
   }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RemoteFileAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }

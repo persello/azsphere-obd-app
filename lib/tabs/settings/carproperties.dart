@@ -76,7 +76,7 @@ class _SettingsCarPropertiesState extends State<SettingsCarProperties> {
               var image = await ImagePicker.pickImage(
                   source: ImageSource.camera, maxWidth: 1000);
 
-                  logger.d('New image: "${image.path}".');
+              logger.d('New image: "${image.path}".');
 
               setState(() {
                 car.imagePath = image.path;

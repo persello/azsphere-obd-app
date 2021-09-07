@@ -7,14 +7,6 @@ import 'classes/vehicle.dart';
 
 part 'globals.g.dart';
 
-const int HIVE_MAP_VIEW_SETTINGS_ADAPTER_ID = 0;
-const int HIVE_VEHICLE_ADAPTER_ID = 1;
-const int HIVE_FUEL_ADAPTER_ID = 2;
-const int HIVE_RAW_LOG_ITEM_ADAPTER_ID = 3;
-const int HIVE_LOG_SESSION_ADAPTER_ID = 4;
-const int HIVE_RAW_TIMED_ITEM_ADAPTER_ID = 5;
-const int HIVE_REMOTE_FILE_ADAPTER_ID = 6;
-
 StoredSettings appSettings;
 OBDScanner globalScanner;
 Vehicle car = new Vehicle();
@@ -47,7 +39,8 @@ class WiFiNetwork {
 /// The global app settings.
 class StoredSettings {
   StoredSettings() {
-    logger.v('StoredSettings constructor called, opening "app-settings" Hive box.');
+    logger.v(
+        'StoredSettings constructor called, opening "app-settings" Hive box.');
 
     // Opens the app settings box
     _hiveReady = getAppSettingsBox();
@@ -67,7 +60,8 @@ class StoredSettings {
 
     // Map settings
     this.mapViewSettingsData = appSettings.get('map-view-settings',
-        defaultValue: new MapViewSettingsData(showMyLocation: true, mapType: MapType.normal.index));
+        defaultValue: new MapViewSettingsData(
+            showMyLocation: true, mapType: MapType.normal.index));
   }
 
   void saveMapSettings() async {
@@ -85,9 +79,10 @@ class StoredSettings {
 }
 
 /// Map view settings.
-@HiveType()
+@HiveType(typeId: 6)
 class MapViewSettingsData {
-  MapViewSettingsData({this.showMyLocation = false, this.mapType = 1, this.mapDataType = 1});
+  MapViewSettingsData(
+      {this.showMyLocation = false, this.mapType = 1, this.mapDataType = 1});
 
   @HiveField(0)
   bool showMyLocation;

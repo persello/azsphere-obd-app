@@ -51,8 +51,12 @@ class _SettingsInfoState extends State<SettingsInfo> {
                   ListGroupSpacer(
                     title: 'About the app',
                   ),
-                  GenericListItem(child: Text('Azure Sphere Driving Statistics\r\nVersion $_version build $_buildNumber')),
-                  GenericListItem(child: Text('mikroBUS™ is a MikroElectronica registered trademark.')),
+                  GenericListItem(
+                      child: Text(
+                          'Azure Sphere Driving Statistics\r\nVersion $_version build $_buildNumber')),
+                  GenericListItem(
+                      child: Text(
+                          'mikroBUS™ is a MikroElectronica registered trademark.')),
                 ],
               ),
             )

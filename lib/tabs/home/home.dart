@@ -50,7 +50,8 @@ class _HomeTabState extends State<HomeTab> {
         context: context,
         builder: (BuildContext context) => new CupertinoAlertDialog(
           title: new Text("Download failed"),
-          content: new Text("An error occurred during the download process. All the downloaded data will now be processed."),
+          content: new Text(
+              "An error occurred during the download process. All the downloaded data will now be processed."),
           actions: [
             CupertinoDialogAction(
               isDefaultAction: true,
@@ -69,7 +70,8 @@ class _HomeTabState extends State<HomeTab> {
   // TODO: Create a list of pollable messages
 
   void newDataFromScanner(OBDScanner scanner, TCPMessage message) {
-    if (message.header == MessageHeader_SDSize || message.header == MessageHeader_SDMounted) {
+    if (message.header == MessageHeader_SDSize ||
+        message.header == MessageHeader_SDMounted) {
       logger.v('Updating UI with new data from scanner.');
 
       // File sizes
@@ -95,9 +97,11 @@ class _HomeTabState extends State<HomeTab> {
   bool _isDisconnectionDialogShown = false;
 
   /// Called when the current scanner instance changes its connection status
-  void scannerConnectionChanged(OBDScanner scanner, OBDScannerConnectionStatus status) async {
+  void scannerConnectionChanged(
+      OBDScanner scanner, OBDScannerConnectionStatus status) async {
     // Scanner found during search
-    if (status == OBDScannerConnectionStatus.STATUS_CONNECTED && searchingForScanner) {
+    if (status == OBDScannerConnectionStatus.STATUS_CONNECTED &&
+        searchingForScanner) {
       logger.i('Device found at address ${scanner.ipAddress}.');
 
       // This also updates the globalScanner indicator
@@ -168,7 +172,8 @@ class _HomeTabState extends State<HomeTab> {
           context: context,
           builder: (BuildContext context) => new CupertinoAlertDialog(
             title: new Text("Connection changed"),
-            content: new Text("The device closed the connection after an unexpected error."),
+            content: new Text(
+                "The device closed the connection after an unexpected error."),
             actions: [
               CupertinoDialogAction(
                 isDefaultAction: true,
@@ -209,7 +214,8 @@ class _HomeTabState extends State<HomeTab> {
       isWiFiConnected = myIp.startsWith('192.168');
     });
 
-    if (isWiFiConnected && globalScanner?.status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
+    if (isWiFiConnected &&
+        globalScanner?.status != OBDScannerConnectionStatus.STATUS_CONNECTED) {
       logger.d('My IP is $myIp.');
       logger.d('Wi-Fi network is ${isWiFiConnected ? "" : "not "}connected.');
 
@@ -322,16 +328,20 @@ class _HomeTabState extends State<HomeTab> {
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 4),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(20)),
                                   child: Container(
                                     height: 12,
                                     width: 12,
                                     color: isWiFiConnected
                                         ? ((globalScanner?.status ??
-                                                    OBDScannerConnectionStatus.STATUS_DISCONNECTED) ==
-                                                OBDScannerConnectionStatus.STATUS_CONNECTED
+                                                    OBDScannerConnectionStatus
+                                                        .STATUS_DISCONNECTED) ==
+                                                OBDScannerConnectionStatus
+                                                    .STATUS_CONNECTED
                                             ? CustomCupertinoColors.systemGreen
-                                            : CustomCupertinoColors.systemYellow)
+                                            : CustomCupertinoColors
+                                                .systemYellow)
                                         : CustomCupertinoColors.systemRed,
                                   ),
                                 ),
@@ -377,13 +387,16 @@ class _HomeTabState extends State<HomeTab> {
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 4),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(20)),
                                   child: Container(
                                     height: 12,
                                     width: 12,
                                     color: ((globalScanner?.status ??
-                                                OBDScannerConnectionStatus.STATUS_DISCONNECTED) ==
-                                            OBDScannerConnectionStatus.STATUS_CONNECTED)
+                                                OBDScannerConnectionStatus
+                                                    .STATUS_DISCONNECTED) ==
+                                            OBDScannerConnectionStatus
+                                                .STATUS_CONNECTED)
                                         ? CustomCupertinoColors.systemYellow
                                         : CustomCupertinoColors.systemRed,
                                   ),
@@ -432,7 +445,8 @@ class _HomeTabState extends State<HomeTab> {
                     Container(
                       width: 200,
                       child: Text(
-                        globalScanner?.status == OBDScannerConnectionStatus.STATUS_CONNECTED
+                        globalScanner?.status ==
+                                OBDScannerConnectionStatus.STATUS_CONNECTED
                             ? globalScanner?.sdCardMounted ?? 0
                                 ? 'Your data uses ${OBDScanner.byteSizeToString(currentFilesSize)} out of ${OBDScanner.byteSizeToString(1024 * globalScanner?.sdCardSize ?? 0)} available in the device\'s card.'
                                 : 'Please insert a FAT or exFAT microSD card in the slot.'
@@ -449,7 +463,10 @@ class _HomeTabState extends State<HomeTab> {
                         foregroundColor: CustomCupertinoColors.systemBlue,
                         thickness: 2,
                         value: (globalScanner?.sdCardMounted ?? false)
-                            ? currentFilesSize / (1024 * (globalScanner?.sdCardSize ?? double.infinity))
+                            ? currentFilesSize /
+                                (1024 *
+                                    (globalScanner?.sdCardSize ??
+                                        double.infinity))
                             : 0,
                       ),
                     ),
@@ -457,7 +474,9 @@ class _HomeTabState extends State<HomeTab> {
                 ),
 
                 // Sync status: syncing
-                if (syncInProgress && globalScanner.status == OBDScannerConnectionStatus.STATUS_CONNECTED)
+                if (syncInProgress &&
+                    globalScanner.status ==
+                        OBDScannerConnectionStatus.STATUS_CONNECTED)
                   ListButton(
                     padding: EdgeInsets.symmetric(horizontal: 30),
                     onPressed: () {
@@ -487,7 +506,9 @@ class _HomeTabState extends State<HomeTab> {
                   ),
 
                 // Sync status: synced (or device disconnected)
-                if (!syncInProgress || globalScanner.status != OBDScannerConnectionStatus.STATUS_CONNECTED)
+                if (!syncInProgress ||
+                    globalScanner.status !=
+                        OBDScannerConnectionStatus.STATUS_CONNECTED)
                   GenericListItem(
                     isLast: true,
                     child: Padding(
@@ -513,25 +534,28 @@ class _HomeTabState extends State<HomeTab> {
                             // During sync, no data will be saved if you're driving.
                             child: CupertinoButton(
                               child: Text('Sync now'),
-                              onPressed:
-                                  (globalScanner?.status == OBDScannerConnectionStatus.STATUS_CONNECTED &&
-                                          (globalScanner?.sdCardMounted ?? false))
-                                      ? () {
-                                          // Start sync
-                                          logger.i('Sync button pressed.');
+                              onPressed: (globalScanner?.status ==
+                                          OBDScannerConnectionStatus
+                                              .STATUS_CONNECTED &&
+                                      (globalScanner?.sdCardMounted ?? false))
+                                  ? () {
+                                      // Start sync
+                                      logger.i('Sync button pressed.');
 
-                                          downloadWatchdogTimer =
-                                              new Timer.periodic(new Duration(seconds: 20), downloadWatchdog);
+                                      downloadWatchdogTimer =
+                                          new Timer.periodic(
+                                              new Duration(seconds: 20),
+                                              downloadWatchdog);
 
-                                          car.askRemoteLogs();
+                                      car.askRemoteLogs();
 
-                                          syncInProgress = true;
+                                      syncInProgress = true;
 
-                                          // TODO: Save car data after elaboration.
+                                      // TODO: Save car data after elaboration.
 
-                                          // car.save();
-                                        }
-                                      : null,
+                                      // car.save();
+                                    }
+                                  : null,
                             ),
                           ),
                         ],
@@ -558,7 +582,8 @@ class _HomeTabState extends State<HomeTab> {
                       children: <Widget>[
                         // Image
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
@@ -567,7 +592,8 @@ class _HomeTabState extends State<HomeTab> {
                               width: 80,
                               child: (car.imagePath == null
                                   ? Icon(CupertinoIcons.photo_camera_solid,
-                                      size: 40, color: CustomCupertinoColors.systemGray4)
+                                      size: 40,
+                                      color: CustomCupertinoColors.systemGray4)
                                   : FittedBox(
                                       child: Image.file(File(car.imagePath)),
                                       fit: BoxFit.cover,
@@ -581,15 +607,21 @@ class _HomeTabState extends State<HomeTab> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              (car.brand == '') ? 'Unknown brand' : car.brand ?? 'Unknown brand',
+                              (car.brand == '')
+                                  ? 'Unknown brand'
+                                  : car.brand ?? 'Unknown brand',
                               style: CustomCupertinoTextStyles.blackStyle,
                             ),
                             Text(
-                              (car.model == '') ? 'Unknown model' : car.model ?? 'Unknown model',
+                              (car.model == '')
+                                  ? 'Unknown model'
+                                  : car.model ?? 'Unknown model',
                               style: CustomCupertinoTextStyles.blackStyle,
                             ),
                             Text(
-                              (car.vin == '') ? 'Unknown VIN' : car.vin ?? 'Unknown VIN',
+                              (car.vin == '')
+                                  ? 'Unknown VIN'
+                                  : car.vin ?? 'Unknown VIN',
                               style: CustomCupertinoTextStyles.secondaryStyle,
                             ),
                           ],

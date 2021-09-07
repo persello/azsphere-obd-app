@@ -3,7 +3,7 @@ import 'package:hive/hive.dart';
 part 'fuel.g.dart';
 
 /// Represents a type of fuel that can be used in a vehicle.
-@HiveType()
+@HiveType(typeId: 0)
 class Fuel {
   const Fuel({this.name, this.massAirFuelRatio, this.density});
 
@@ -22,9 +22,9 @@ class Fuel {
 
 /// List of common fuel types
 class CommonFuels {
-
   // Undefined fuel
-  static const Fuel undefined = Fuel(name: 'Not selected', massAirFuelRatio: (0), density: 0);
+  static const Fuel undefined =
+      Fuel(name: 'Not selected', massAirFuelRatio: (0), density: 0);
 
   static const List<Fuel> list = [
     Fuel(name: 'Diesel', massAirFuelRatio: (1 / 14.6), density: 0.832),
